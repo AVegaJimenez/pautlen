@@ -1,0 +1,19 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+float negativo(float x)
+{
+    return -x;
+}
+
+int main(int argc, char** argv) {
+
+    double f, x;
+
+    f=1.5E5;
+    printf("x=");
+    scanf("%f",&x);
+    x=negativo(f,f);
+
+    return (EXIT_SUCCESS);
+}
