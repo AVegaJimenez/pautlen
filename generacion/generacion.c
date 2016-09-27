@@ -93,7 +93,7 @@ void escribir_fin(FILE* fpasm)
  */
 void escribir_operando(FILE * fpasm, char * nombre, int es_var)
 {
-	if(es_var==1){
+	if(es_var){
 		fprintf(fpasm, "push dword _%s\n", nombre);
 	}
 	else{
@@ -111,7 +111,7 @@ void escribir_operando(FILE * fpasm, char * nombre, int es_var)
 void asignar(FILE * fpasm, char * nombre, int es_inmediato)
 {
 	fprintf(fpasm, "pop dword eax\n");
-	fprintf(fpasm, "mov dword %s, %s\n", nombre, es_inmediato? "eax" : "[eax]");
+	fprintf(fpasm, "mov dword [_%s], %s\n", nombre, es_inmediato? "eax" : "[eax]");
 
 }
 
@@ -187,6 +187,7 @@ void escribir(FILE * fpasm, int es_inmediato, int tipo)
 	}
 	fprintf(fpasm, "call print_%s\n", tipo==ENTERO?"int":"boolean");
 	fprintf(fpasm, "add esp, 4\n");
+	fprintf(fpasm, "call print_endofline\n");
 
 }
 
@@ -221,7 +222,7 @@ void multiplicar(FILE * fpasm, int es_inmediato_1, int es_inmediato_2)
 		fprintf(fpasm, "mov ebx, [ebx]\n");
 	}
 
-	fprintf(fpasm, "imul eax, ebx\n");
+	fprintf(fpasm, "imul ebx\n");
 	fprintf(fpasm, "push dword eax\n");
 
 }
@@ -233,13 +234,14 @@ void dividir(FILE * fpasm, int es_inmediato_1, int es_inmediato_2)
 	if (!es_inmediato_1) {
 		fprintf(fpasm, "mov eax, [eax]\n");
 	}
+	fprintf(fpasm, "xor edx, edx");
 
 	fprintf(fpasm, "pop dword ebx\n");
 	if (!es_inmediato_2) {
 		fprintf(fpasm, "mov ebx, [ebx]\n");
 	}
 
-	fprintf(fpasm, "idiv eax, ebx\n");
+	fprintf(fpasm, "idiv ebx\n");
 	fprintf(fpasm, "push dword eax\n");
 
 }
