@@ -36,7 +36,7 @@ void escribir_cabecera_bss(FILE* fpasm)
  *
  * @param      fpasm   The fpasm
  * @param      nombre  Nombre de la variable
- * @param[in]  tipo    Tipo 
+ * @param[in]  tipo    Tipo
  * @param[in]  tamano  tamano
  */
 void declarar_variable(FILE* fpasm, char * nombre,  int tipo,  int tamano)
@@ -146,13 +146,13 @@ void no(FILE * fpasm, int es_inmediato, int cuantos_no)
 {
 
 	fprintf(fpasm,"pop dword eax\n");
-	fprintf(fpasm,"xor ebx, ebx\n");
-	fprintf(fpasm,"cmp eax , ebx\n");
+	fprintf(fpasm,"cmp eax , 0\n");
 	fprintf(fpasm,"jz _poner1_%d\n",cuantos_no);
-	fprintf(fpasm,"push dword ebx\n");
+	fprintf(fpasm,"push dword 0\n");
+	fprintf(fpasm,"jmp _no_end_%d", cuantos_no);
 	fprintf(fpasm,"_poner1_%d:\n",cuantos_no);
-	fprintf(fpasm,"mov eax, 1\n");
-	fprintf(fpasm,"push dword, eax\n");
+	fprintf(fpasm,"push dword 1\n");
+	fprintf(fpasm,"_no_end_%d:", cuantos_no);
 
 
 }
