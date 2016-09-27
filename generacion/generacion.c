@@ -41,7 +41,7 @@ void escribir_cabecera_bss(FILE* fpasm)
  */
 void declarar_variable(FILE* fpasm, char * nombre,  int tipo,  int tamano)
 {
-	fprintf(fpasm, "\t _%s %d %d", nombre, tipo, tamano);
+	fprintf(fpasm, "\t _%s resd  %d\n", nombre, tamano);
 
 }
 
@@ -94,10 +94,10 @@ void escribir_fin(FILE* fpasm)
 void escribir_operando(FILE * fpasm, char * nombre, int es_var)
 {
 	if(es_var==1){
-		fprintf(fpasm, "push _%s", nombre);
+		fprintf(fpasm, "push dword _%s\n", nombre);
 	}
 	else{
-		fprintf(fpasm, "push %s", nombre);
+		fprintf(fpasm, "push dword %s\n", nombre);
 	}
 }
 
@@ -134,13 +134,13 @@ void sumar(FILE * fpasm, int es_inmediato_1, int es_inmediato_2)
 
 void cambiar_signo(FILE * fpasm, int es_inmediato)
 {
-	fprintf(fpasm, "pop dword eax");
+	fprintf(fpasm, "pop dword eax\n");
 	if (!es_inmediato) {
-		fprintf(fpasm, "mov eax, [eax]");
+		fprintf(fpasm, "mov eax, [eax]\n");
 	}
 
-	fprintf(fpasm, "neg eax");
-	fprintf(fpasm, "push dword eax");
+	fprintf(fpasm, "neg eax\n");
+	fprintf(fpasm, "push dword eax\n");
 }
 void no(FILE * fpasm, int es_inmediato, int cuantos_no)
 {
@@ -152,7 +152,7 @@ void no(FILE * fpasm, int es_inmediato, int cuantos_no)
 	fprintf(fpasm,"jmp _no_end_%d", cuantos_no);
 	fprintf(fpasm,"_poner1_%d:\n",cuantos_no);
 	fprintf(fpasm,"push dword 1\n");
-	fprintf(fpasm,"_no_end_%d:", cuantos_no);
+	fprintf(fpasm,"_no_end_%d:\n", cuantos_no);
 
 
 }
@@ -185,7 +185,7 @@ void escribir(FILE * fpasm, int es_inmediato, int tipo)
 		fprintf(fpasm, "mov eax, [eax]\n");
 		fprintf(fpasm, "push dword eax\n");
 	}
-	fprintf(fpasm, "call print_%s", tipo==ENTERO?"int":"boolean");
+	fprintf(fpasm, "call print_%s\n", tipo==ENTERO?"int":"boolean");
 	fprintf(fpasm, "add esp, 4\n");
 
 }
