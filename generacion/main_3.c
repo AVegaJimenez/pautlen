@@ -61,6 +61,12 @@ int main (int argc, char ** argv)
 	escribir(salida,0,ENTERO);
 
 
+	escribir_operando(salida, "8", 0);
+	cambiar_signo(salida, 1);
+	asignar(salida,"z",1);
+	/* printf(z); */
+	escribir_operando(salida,"z",1);
+	escribir(salida,0,ENTERO);
 
 
 	escribir_fin(salida);

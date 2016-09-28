@@ -18,9 +18,8 @@ int main (int argc, char ** argv)
 
 
 
-	declarar_variable(salida, "x", ENTERO, 1);
-	declarar_variable(salida, "y", ENTERO, 1);
-	declarar_variable(salida, "z", ENTERO, 1);
+	declarar_variable(salida, "x", BOOLEANO, 1);
+	declarar_variable(salida, "z", BOOLEANO, 1);
 
 
 	escribir_segmento_codigo(salida);
@@ -29,52 +28,43 @@ int main (int argc, char ** argv)
 	/* scanf(&x); */
 	/* scanf(&y); */
 
-	leer(salida, "x", ENTERO);
-	leer(salida,"y",ENTERO);
+	leer(salida, "x", BOOLEANO);
 
-	/* z = x + y */
+	/* z = x || y */
 	escribir_operando(salida,"x",1);
-	escribir_operando(salida,"y",1);
-	sumar(salida,0,0);
+	escribir_operando(salida,"1",0);
+	o(salida,0,1);
 	asignar(salida,"z",1);
 	/* printf(z); */
 	escribir_operando(salida,"z",1);
-	escribir(salida,0,ENTERO);
+	escribir(salida,0,BOOLEANO);
 
-	/* z = x - y */
+	/* z = x && y */
 	escribir_operando(salida,"x",1);
-	escribir_operando(salida,"y",1);
-	restar(salida,0,0);
+	escribir_operando(salida,"1",0);
+	y(salida,0,1);
 	asignar(salida,"z",1);
 	/* printf(z); */
 	escribir_operando(salida,"z",1);
-	escribir(salida,0,ENTERO);
+	escribir(salida,0,BOOLEANO);
 
-	/* z = x * y */
+	/* z = x || y */
+	escribir_operando(salida,"1",0);
 	escribir_operando(salida,"x",1);
-	escribir_operando(salida,"y",1);
-	multiplicar(salida,0,0);
+	o(salida,1,0);
 	asignar(salida,"z",1);
 	/* printf(z); */
 	escribir_operando(salida,"z",1);
-	escribir(salida,0,ENTERO);
+	escribir(salida,0,BOOLEANO);
 
-	/* z = x / y */
+	/* z = x && y */
+	escribir_operando(salida,"1",0);
 	escribir_operando(salida,"x",1);
-	escribir_operando(salida,"y",1);
-	dividir(salida,0,0);
+	y(salida,1,0);
 	asignar(salida,"z",1);
 	/* printf(z); */
 	escribir_operando(salida,"z",1);
-	escribir(salida,0,ENTERO);
-
-
-	escribir_operando(salida, "x", 1);
-	cambiar_signo(salida, 0);
-	asignar(salida,"z",1);
-	/* printf(z); */
-	escribir_operando(salida,"z",1);
-	escribir(salida,0,ENTERO);
+	escribir(salida,0,BOOLEANO);
 
 	escribir_fin(salida);
 

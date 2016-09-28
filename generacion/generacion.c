@@ -17,8 +17,8 @@ void escribir_cabecera_compatibilidad(FILE* fpasm)
 void escribir_subseccion_data(FILE* fpasm)
 {
 	fprintf(fpasm, "segment .data\n");
-	fprintf(fpasm, "__index_out_of_bounds dd \"Index out of bounds\\n\", 10, 0\n");
-	fprintf(fpasm, "__division_by_zero dd \"Division by zero\", 10, 0\n");
+	fprintf(fpasm, "__index_out_of_bounds db \"Index out of bounds\\n\", 10, 0\n");
+	fprintf(fpasm, "__division_by_zero db \"Division by zero\", 10, 0\n");
 
 }
 
@@ -30,7 +30,7 @@ void escribir_subseccion_data(FILE* fpasm)
 void escribir_cabecera_bss(FILE* fpasm)
 {
 	fprintf(fpasm, "segment .bss\n");
-	fprintf(fpasm, "\t__esp resd 1\n");
+	fprintf(fpasm, "__esp resd 1\n");
 }
 
 /**
