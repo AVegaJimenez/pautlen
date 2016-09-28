@@ -17,6 +17,7 @@ MAINS_LIB=generacion.o
 GEN = $(patsubst %, %_gen.asm, $(MAINS_BIN))
 
 all: $(MAINS_BIN) $(GEN)
+	make asm
 	@echo "Make asm to compile the asm files"
 
 asm: $(BIN)
