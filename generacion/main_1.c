@@ -33,8 +33,8 @@ int main (int argc, char ** argv)
 	leer(salida,"y",ENTERO);
 
 	/* z = x + y */
-	escribir_operando(salida,"y",1);
 	escribir_operando(salida,"x",1);
+	escribir_operando(salida,"y",1);
 	sumar(salida,0,0);
 	asignar(salida,"z",1);
 	/* printf(z); */
@@ -42,8 +42,8 @@ int main (int argc, char ** argv)
 	escribir(salida,0,ENTERO);
 
 	/* z = x - y */
-	escribir_operando(salida,"y",1);
 	escribir_operando(salida,"x",1);
+	escribir_operando(salida,"y",1);
 	restar(salida,0,0);
 	asignar(salida,"z",1);
 	/* printf(z); */
@@ -51,8 +51,8 @@ int main (int argc, char ** argv)
 	escribir(salida,0,ENTERO);
 
 	/* z = x * y */
-	escribir_operando(salida,"y",1);
 	escribir_operando(salida,"x",1);
+	escribir_operando(salida,"y",1);
 	multiplicar(salida,0,0);
 	asignar(salida,"z",1);
 	/* printf(z); */
@@ -60,8 +60,8 @@ int main (int argc, char ** argv)
 	escribir(salida,0,ENTERO);
 
 	/* z = x / y */
-	escribir_operando(salida,"y",1);
 	escribir_operando(salida,"x",1);
+	escribir_operando(salida,"y",1);
 	dividir(salida,0,0);
 	asignar(salida,"z",1);
 	/* printf(z); */

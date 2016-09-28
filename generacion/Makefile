@@ -25,9 +25,6 @@ asm: $(BIN)
 $(GEN):%_gen.asm: %
 	@echo "\t>> Generating $@"
 	./$^ $@
-	@SRC=$(wildcard *.asm)
-	@BIN=$(patsubst %.asm, %, $(SRC))
-	@OBJ=$(patsubst %, %.o, $(BIN))
 
 
 $(MAINS_BIN):%: %.o generacion.o

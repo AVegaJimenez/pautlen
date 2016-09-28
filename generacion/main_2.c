@@ -42,8 +42,8 @@ int main (int argc, char ** argv)
 	escribir(salida,0,BOOLEANO);
 
 	/* z = x && y */
-	escribir_operando(salida,"y",1);
 	escribir_operando(salida,"x",1);
+	escribir_operando(salida,"y",1);
 	y(salida,0,0);
 	asignar(salida,"z",1);
 	/* printf(z); */

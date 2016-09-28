@@ -17,6 +17,8 @@ void escribir_cabecera_compatibilidad(FILE* fpasm)
 void escribir_subseccion_data(FILE* fpasm)
 {
 	fprintf(fpasm, "segment .data\n");
+	fprintf(fpasm, "__index_out_of_bounds dd \"Index out of bounds\\n\", 10, 0\n");
+	fprintf(fpasm, "__division_by_zero dd \"Division by zero\", 10, 0\n");
 
 }
 
@@ -80,7 +82,12 @@ void escribir_inicio_main(FILE* fpasm)
  */
 void escribir_fin(FILE* fpasm)
 {
-	fprintf(fpasm, "mov dword esp, [__esp]\n");
+	fprintf(fpasm, "jmp near _fin\n");
+	fprintf(fpasm, "_error_division_zero:\n");
+	fprintf(fpasm, "push dword __division_by_zero\n");
+	fprintf(fpasm, "call print_string\n");
+	fprintf(fpasm, "add esp, 4\n");
+	fprintf(fpasm, "_fin: mov dword esp, [__esp]\n");
 	fprintf(fpasm, "ret\n");
 }
 
@@ -117,14 +124,14 @@ void asignar(FILE * fpasm, char * nombre, int es_inmediato)
 
 void sumar(FILE * fpasm, int es_inmediato_1, int es_inmediato_2)
 {
-	fprintf(fpasm, "pop dword eax\n");
-	if (!es_inmediato_1) {
-		fprintf(fpasm, "mov eax, [eax]\n");
-	}
-
 	fprintf(fpasm, "pop dword ebx\n");
 	if (!es_inmediato_2) {
 		fprintf(fpasm, "mov ebx, [ebx]\n");
+	}
+
+	fprintf(fpasm, "pop dword eax\n");
+	if (!es_inmediato_1) {
+		fprintf(fpasm, "mov eax, [eax]\n");
 	}
 
 	fprintf(fpasm, "add eax, ebx\n");
@@ -198,15 +205,16 @@ void escribir(FILE * fpasm, int es_inmediato, int tipo)
 void restar(FILE * fpasm, int es_inmediato_1, int es_inmediato_2)
 {
 	/* SIMILAR A SUMAR */
+	fprintf(fpasm, "pop dword ebx\n");
+	if (!es_inmediato_2) {
+		fprintf(fpasm, "mov ebx, [ebx]\n");
+	}
+
 	fprintf(fpasm, "pop dword eax\n");
 	if (!es_inmediato_1) {
 		fprintf(fpasm, "mov eax, [eax]\n");
 	}
 
-	fprintf(fpasm, "pop dword ebx\n");
-	if (!es_inmediato_2) {
-		fprintf(fpasm, "mov ebx, [ebx]\n");
-	}
 
 	fprintf(fpasm, "sub eax, ebx\n");
 	fprintf(fpasm, "push dword eax\n");
@@ -215,14 +223,14 @@ void restar(FILE * fpasm, int es_inmediato_1, int es_inmediato_2)
 void multiplicar(FILE * fpasm, int es_inmediato_1, int es_inmediato_2)
 {
 	/* SIMILAR A SUMAR (CUIDADO CON EDX) */
-	fprintf(fpasm, "pop dword eax\n");
-	if (!es_inmediato_1) {
-		fprintf(fpasm, "mov eax, [eax]\n");
-	}
-
 	fprintf(fpasm, "pop dword ebx\n");
 	if (!es_inmediato_2) {
 		fprintf(fpasm, "mov ebx, [ebx]\n");
+	}
+
+	fprintf(fpasm, "pop dword eax\n");
+	if (!es_inmediato_1) {
+		fprintf(fpasm, "mov eax, [eax]\n");
 	}
 
 	fprintf(fpasm, "imul ebx\n");
@@ -233,16 +241,21 @@ void multiplicar(FILE * fpasm, int es_inmediato_1, int es_inmediato_2)
 void dividir(FILE * fpasm, int es_inmediato_1, int es_inmediato_2)
 {
 	/* SIMILAR A MULTIPLICAR (CUIDADO CON LA EXTENSIÓN DE SIGNO PREVIA) */
-	fprintf(fpasm, "pop dword eax\n");
-	if (!es_inmediato_1) {
-		fprintf(fpasm, "mov eax, [eax]\n");
-	}
-	fprintf(fpasm, "xor edx, edx\n");
-
 	fprintf(fpasm, "pop dword ebx\n");
 	if (!es_inmediato_2) {
 		fprintf(fpasm, "mov ebx, [ebx]\n");
 	}
+
+	fprintf(fpasm, "cmp ebx, 0\n");
+	fprintf(fpasm, "je near _error_division_zero\n");
+
+
+	fprintf(fpasm, "pop dword eax\n");
+	if (!es_inmediato_1) {
+		fprintf(fpasm, "mov eax, [eax]\n");
+	}
+	fprintf(fpasm, "cdq\n");
+
 
 	fprintf(fpasm, "idiv ebx\n");
 	fprintf(fpasm, "push dword eax\n");
@@ -252,14 +265,16 @@ void dividir(FILE * fpasm, int es_inmediato_1, int es_inmediato_2)
 void o(FILE * fpasm, int es_inmediato_1, int es_inmediato_2)
 {
 	/* SIMILAR A SUMAR */
-	fprintf(fpasm, "pop dword eax\n");
-	if (!es_inmediato_1) {
-		fprintf(fpasm, "mov eax, [eax]\n");
-	}
+ 
 
 	fprintf(fpasm, "pop dword ebx\n");
 	if (!es_inmediato_2) {
 		fprintf(fpasm, "mov ebx, [ebx]\n");
+	}
+
+	fprintf(fpasm, "pop dword eax\n");
+	if (!es_inmediato_1) {
+		fprintf(fpasm, "mov eax, [eax]\n");
 	}
 
 	fprintf(fpasm, "or eax, ebx\n");
@@ -270,15 +285,16 @@ void o(FILE * fpasm, int es_inmediato_1, int es_inmediato_2)
 void y(FILE * fpasm, int es_inmediato_1, int es_inmediato_2)
 {
 	/* SIMILAR A SUMAR */
+	fprintf(fpasm, "pop dword ebx\n");
+	if (!es_inmediato_2) {
+		fprintf(fpasm, "mov ebx, [ebx]\n");
+	}
+
 	fprintf(fpasm, "pop dword eax\n");
 	if (!es_inmediato_1) {
 		fprintf(fpasm, "mov eax, [eax]\n");
 	}
 
-	fprintf(fpasm, "pop dword ebx\n");
-	if (!es_inmediato_2) {
-		fprintf(fpasm, "mov ebx, [ebx]\n");
-	}
 
 	fprintf(fpasm, "and eax, ebx\n");
 	fprintf(fpasm, "push dword eax\n");
