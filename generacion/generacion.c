@@ -146,10 +146,13 @@ void no(FILE * fpasm, int es_inmediato, int cuantos_no)
 {
 
 	fprintf(fpasm,"pop dword eax\n");
+	if(!es_inmediato) {
+		fprintf(fpasm, "mov eax, [eax]\n");
+	}
 	fprintf(fpasm,"cmp eax , 0\n");
 	fprintf(fpasm,"jz _poner1_%d\n",cuantos_no);
 	fprintf(fpasm,"push dword 0\n");
-	fprintf(fpasm,"jmp _no_end_%d", cuantos_no);
+	fprintf(fpasm,"jmp _no_end_%d\n", cuantos_no);
 	fprintf(fpasm,"_poner1_%d:\n",cuantos_no);
 	fprintf(fpasm,"push dword 1\n");
 	fprintf(fpasm,"_no_end_%d:\n", cuantos_no);
@@ -234,7 +237,7 @@ void dividir(FILE * fpasm, int es_inmediato_1, int es_inmediato_2)
 	if (!es_inmediato_1) {
 		fprintf(fpasm, "mov eax, [eax]\n");
 	}
-	fprintf(fpasm, "xor edx, edx");
+	fprintf(fpasm, "xor edx, edx\n");
 
 	fprintf(fpasm, "pop dword ebx\n");
 	if (!es_inmediato_2) {
