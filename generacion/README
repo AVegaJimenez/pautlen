@@ -1,0 +1,12 @@
+Autores:
+	-Pareja 5-
+	Sergio Fuentes de Uña
+	Daniel Perdices Burrero
+
+Se incluyen los ficheros:
+	generacion.h
+	generacion.c
+	README (este)
+
+Notas:
+	Los argumentos en las operaciones aritméticas se leen de la pila como se indico el último día.
