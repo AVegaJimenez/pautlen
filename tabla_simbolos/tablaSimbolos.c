@@ -29,11 +29,18 @@ STATUS DeclararLocal(const char *id, INFO_SIMBOLO *desc_id) {
 }
 
 INFO_SIMBOLO *UsoGlobal(const char *id) {
+    if(TablaSimbolosGlobal == NULL) {
+        return NULL;
+    }
     return buscar_simbolo(TablaSimbolosGlobal, id);
 }
 
 INFO_SIMBOLO *UsoLocal(const char *id) {
-    INFO_SIMBOLO *dato = buscar_simbolo(TablaSimbolosLocal, id);
+    INFO_SIMBOLO *dato;
+    if(TablaSimbolosLocal == NULL) {
+        return UsoGlobal(id);
+    }
+    dato = buscar_simbolo(TablaSimbolosLocal, id);
     return dato == NULL? UsoGlobal(id) : dato;
 }
 

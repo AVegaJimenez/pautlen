@@ -7,70 +7,55 @@
 #define ALFA_VAL_THRESH -1
 #define ALFA_CLOSE_ID "cierre"
 #define ALFA_CLOSE_VAL -999
+#define ALFA_HELP "Modo de empleo: %s ENTRADA SALIDA"
 
-void help() {
-
+void help(char * argv0) {
+    printf(ALFA_HELP "\n", argv0);
 }
 
-STATUS alfa_parse(char *buf) {
+void alfa_parse(char *buf, FILE *out) {
     INFO_SIMBOLO *info = NULL;
     char *id = NULL;
     int value;
     if(sscanf(buf, "%ms\t%i", &id, &value) == 2) {
         if(value < ALFA_VAL_THRESH) {
             if(!strcmp(id, ALFA_CLOSE_ID) && value == ALFA_CLOSE_VAL) {
+                fprintf(out, ALFA_CLOSE_ID "\n");
                 free(id);
-                return CerrarFuncion();
+                CerrarFuncion();
             } else {
-                info = (INFO_SIMBOLO *) malloc(sizeof(INFO_SIMBOLO));
+                info = crear_info_simbolo(id, FUNCION, ENTERO, ESCALAR, value, 0);
                 if(info == NULL) {
                     free(id);
-                    return ERR;
+                    return;
                 }
-                info->lexema = id;
-                info->categoria = FUNCION;
-                info->adicional1 = value;
-                if(DeclararFuncion(id, info) == ERR) {
-                    free(info);
-                    free(id);
-                    return ERR;
-                }
+                fprintf(out, DeclararFuncion(id, info) == OK? "%s\n" : "-1\t%s\n", id);
+                 
                 free(info);
                 free(id);
-                return OK;
             }
         } else if(value > ALFA_VAL_THRESH) {
-            info = (INFO_SIMBOLO *) malloc(sizeof(INFO_SIMBOLO));
+            info = crear_info_simbolo(id, VARIABLE, ENTERO, ESCALAR, value, 0);
             if(info == NULL) {
                 free(id);
-                return ERR;
+                return;
             }
-            info->lexema = id;
-            info->categoria = VARIABLE;
-            info->adicional1 = value;
-            if(Declarar(id, info) == ERR) {
-                free(info);
-                free(id);
-                return ERR;
-            }
+            fprintf(out, Declarar(id, info) == OK? "%s\n" : "-1\t%s\n", id);
             free(info);
             free(id);
-            return OK;
         }
     } else if(sscanf(buf, "%ms", &id) == 1) {
-
-    } else {
-
+        info = UsoLocal(id);
+        fprintf(out, "%s\t%d\n", id, info == NULL? -1 : info->adicional1);
+        free(id);
     }
-    return OK;
 }
 
 int main(int argc, char **argv) {
     FILE *in = NULL, *out = NULL;
     char buf[BUF_SIZE], **id = NULL;
-    INFO_SIMBOLO *info = NULL;
     if(argc != 3) {
-        help();
+        help(argv[0]);
         return 0;
     }
     in = fopen(argv[1], "r");
@@ -84,5 +69,8 @@ int main(int argc, char **argv) {
         return 1;
     }
     while(fgets(buf, BUF_SIZE, in) != NULL) {
+        alfa_parse(buf, out);
     }
+    fclose(in);
+    fclose(out);
 }
