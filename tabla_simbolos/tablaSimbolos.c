@@ -4,6 +4,10 @@
 TABLA_HASH *TablaSimbolosGlobal = NULL;
 TABLA_HASH *TablaSimbolosLocal = NULL;
 
+STATUS Declarar(const char *id, INFO_SIMBOLO *desc_id) {
+    return TablaSimbolosLocal == NULL? DeclararGlobal(id, desc_id) : DeclararLocal(id, desc_id);
+}
+
 STATUS DeclararGlobal(const char *id, INFO_SIMBOLO *desc_id) {
     if(TablaSimbolosGlobal == NULL) {
         TablaSimbolosGlobal = crear_tabla(TABLA_SIMBOLOS_GLOBAL_TAM);
@@ -41,9 +45,27 @@ STATUS DeclararFuncion(const char *id, INFO_SIMBOLO *desc_id) {
         liberar_tabla(TablaSimbolosLocal);
         TablaSimbolosLocal = crear_tabla(TABLA_SIMBOLOS_LOCAL_TAM);
         if(TablaSimbolosLocal == NULL) {
+            borrar_simbolo(TablaSimbolosGlobal, id);
+            liberar_tabla(TablaSimbolosLocal);
+            TablaSimbolosLocal = NULL;
             return ERR;
         }
-        return insertar_simbolo(TablaSimbolosLocal, id, desc_id->categoria, desc_id->tipo, desc_id->clase, desc_id->adicional1, desc_id->adicional2);
+        if(insertar_simbolo(TablaSimbolosLocal, id, desc_id->categoria, desc_id->tipo, desc_id->clase, desc_id->adicional1, desc_id->adicional2) == ERR) {
+            borrar_simbolo(TablaSimbolosGlobal, id);
+            liberar_tabla(TablaSimbolosLocal);
+            TablaSimbolosLocal = NULL;
+            return ERR;
+        }
+        return OK;
     }
     return ERR;
+}
+
+STATUS CerrarFuncion() {
+    if(TablaSimbolosLocal == NULL) {
+        return ERR;
+    }
+    liberar_tabla(TablaSimbolosLocal);
+    TablaSimbolosLocal = NULL;
+    return OK;
 }
