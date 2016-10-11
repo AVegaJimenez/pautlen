@@ -16,8 +16,9 @@ void help(char * argv0) {
 void alfa_parse(char *buf, FILE *out) {
     INFO_SIMBOLO *info = NULL;
     char *id = NULL;
-    int value;
-    if(sscanf(buf, "%ms\t%i", &id, &value) == 2) {
+    int scan, value;
+    scan = sscanf(buf, "%ms\t%i", &id, &value);
+    if(scan == 2) {
         if(value < ALFA_VAL_THRESH) {
             if(!strcmp(id, ALFA_CLOSE_ID) && value == ALFA_CLOSE_VAL) {
                 fprintf(out, ALFA_CLOSE_ID "\n");
@@ -30,8 +31,7 @@ void alfa_parse(char *buf, FILE *out) {
                     return;
                 }
                 fprintf(out, DeclararFuncion(id, info) == OK? "%s\n" : "-1\t%s\n", id);
-                 
-                free(info);
+                liberar_info_simbolo(info);
                 free(id);
             }
         } else if(value > ALFA_VAL_THRESH) {
@@ -41,10 +41,10 @@ void alfa_parse(char *buf, FILE *out) {
                 return;
             }
             fprintf(out, Declarar(id, info) == OK? "%s\n" : "-1\t%s\n", id);
-            free(info);
+            liberar_info_simbolo(info);
             free(id);
         }
-    } else if(sscanf(buf, "%ms", &id) == 1) {
+    } else if(scan == 1) {
         info = UsoLocal(id);
         fprintf(out, "%s\t%d\n", id, info == NULL? -1 : info->adicional1);
         free(id);
