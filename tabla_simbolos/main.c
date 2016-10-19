@@ -71,6 +71,7 @@ int main(int argc, char **argv) {
     while(fgets(buf, BUF_SIZE, in) != NULL) {
         alfa_parse(buf, out);
     }
+    Terminar();
     fclose(in);
     fclose(out);
 }
