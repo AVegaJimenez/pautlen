@@ -1,4 +1,4 @@
-BIN = prueba
+BIN = prueba_tabla
 OBJ = main.o tablaSimbolos.o tablaHash.o
 
 all: ${BIN}
