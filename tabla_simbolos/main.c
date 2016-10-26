@@ -53,7 +53,7 @@ void alfa_parse(char *buf, FILE *out) {
 
 int main(int argc, char **argv) {
     FILE *in = NULL, *out = NULL;
-    char buf[BUF_SIZE], **id = NULL;
+    char buf[BUF_SIZE];
     if(argc != 3) {
         help(argv[0]);
         return 0;
@@ -71,6 +71,7 @@ int main(int argc, char **argv) {
     while(fgets(buf, BUF_SIZE, in) != NULL) {
         alfa_parse(buf, out);
     }
+    Terminar();
     fclose(in);
     fclose(out);
 }

@@ -76,3 +76,12 @@ STATUS CerrarFuncion() {
     TablaSimbolosLocal = NULL;
     return OK;
 }
+
+void Terminar() {
+    if(TablaSimbolosLocal != NULL) {
+        liberar_tabla(TablaSimbolosLocal);
+    }
+    if(TablaSimbolosGlobal != NULL) {
+        liberar_tabla(TablaSimbolosGlobal);
+    }
+}
