@@ -1,8 +1,11 @@
 %{
 #include <stdio.h>
 #include "tokens.h"
+#define _ERROR_HEAD "****Error en [lin %ld, col %ld]: "
+#define _ERROR_SYM  "simbolo no permitido (%s)\n"
+#define _ERROR_ID   "identificador demasiado largo (%s)\n"
 long yylin = 1;
-long yycol = 0;
+long yycol = 1;
 %}
 %option noyywrap
 whitespace              [ \t]+
@@ -45,49 +48,49 @@ constante_entera    	[0-9]+
 true                	"true"
 false               	"false"
 identificador       	[a-zA-Z][a-zA-Z0-9]{0,99}
-identificadorlargo      [a-zA-Z][a-zA-Z0-9]*
+erroridentificador      [a-zA-Z][a-zA-Z0-9]*
 error               	.
 %%
 {comentario}          	{/* COMENTARIO */}
-{whitespace}            {/* WHITESPACE */}
+{whitespace}            {yycol += yyleng;}
 {newline}               {yylin++; yycol = 0;}
-{main}                	{return  TOK_MAIN;}
-{int}                 	{return  TOK_INT;}
-{boolean}             	{return  TOK_BOOLEAN;}
-{array}               	{return  TOK_ARRAY;}
-{function}            	{return  TOK_FUNCTION;}
-{if}                  	{return  TOK_IF;}
-{else}                	{return  TOK_ELSE;}
-{while}               	{return  TOK_WHILE;}
-{scanf}               	{return  TOK_SCANF;}
-{printf}              	{return  TOK_PRINTF;}
-{return}              	{return  TOK_RETURN;}
-{puntoycoma}          	{return  TOK_PUNTOYCOMA;}
-{coma}                	{return  TOK_COMA;}
-{parentesisizquierdo} 	{return  TOK_PARENTESISIZQUIERDO;}
-{parentesisderecho}   	{return  TOK_PARENTESISDERECHO;}
-{corcheteizquierdo}   	{return  TOK_CORCHETEIZQUIERDO;}
-{corchetederecho}     	{return  TOK_CORCHETEDERECHO;}
-{llaveizquierda}      	{return  TOK_LLAVEIZQUIERDA;}
-{llavederecha}        	{return  TOK_LLAVEDERECHA;}
-{asignacion}          	{return  TOK_ASIGNACION;}
-{mas}                 	{return  TOK_MAS;}
-{menos}               	{return  TOK_MENOS;}
-{division}            	{return  TOK_DIVISION;}
-{asterisco}           	{return  TOK_ASTERISCO;}
-{and}                 	{return  TOK_AND;}
-{or}                  	{return  TOK_OR;}
-{not}                 	{return  TOK_NOT;}
-{igual}               	{return  TOK_IGUAL;}
-{distinto}            	{return  TOK_DISTINTO;}
-{menorigual}          	{return  TOK_MENORIGUAL;}
-{mayorigual}          	{return  TOK_MAYORIGUAL;}
-{menor}               	{return  TOK_MENOR;}
-{mayor}               	{return  TOK_MAYOR;}
-{constante_entera}    	{return  TOK_CONSTANTE_ENTERA;}
-{true}                	{return  TOK_TRUE;}
-{false}               	{return  TOK_FALSE;}
-{identificador}       	{return  TOK_IDENTIFICADOR;}
-{identificadorlargo}    {return  TOK_ERROR;}
-{error}               	{return  TOK_ERROR;}
+{main}                	{yycol += yyleng; return  TOK_MAIN;}
+{int}                 	{yycol += yyleng; return  TOK_INT;}
+{boolean}             	{yycol += yyleng; return  TOK_BOOLEAN;}
+{array}               	{yycol += yyleng; return  TOK_ARRAY;}
+{function}            	{yycol += yyleng; return  TOK_FUNCTION;}
+{if}                  	{yycol += yyleng; return  TOK_IF;}
+{else}                	{yycol += yyleng; return  TOK_ELSE;}
+{while}               	{yycol += yyleng; return  TOK_WHILE;}
+{scanf}               	{yycol += yyleng; return  TOK_SCANF;}
+{printf}              	{yycol += yyleng; return  TOK_PRINTF;}
+{return}              	{yycol += yyleng; return  TOK_RETURN;}
+{puntoycoma}          	{yycol += yyleng; return  TOK_PUNTOYCOMA;}
+{coma}                	{yycol += yyleng; return  TOK_COMA;}
+{parentesisizquierdo} 	{yycol += yyleng; return  TOK_PARENTESISIZQUIERDO;}
+{parentesisderecho}   	{yycol += yyleng; return  TOK_PARENTESISDERECHO;}
+{corcheteizquierdo}   	{yycol += yyleng; return  TOK_CORCHETEIZQUIERDO;}
+{corchetederecho}     	{yycol += yyleng; return  TOK_CORCHETEDERECHO;}
+{llaveizquierda}      	{yycol += yyleng; return  TOK_LLAVEIZQUIERDA;}
+{llavederecha}        	{yycol += yyleng; return  TOK_LLAVEDERECHA;}
+{asignacion}          	{yycol += yyleng; return  TOK_ASIGNACION;}
+{mas}                 	{yycol += yyleng; return  TOK_MAS;}
+{menos}               	{yycol += yyleng; return  TOK_MENOS;}
+{division}            	{yycol += yyleng; return  TOK_DIVISION;}
+{asterisco}           	{yycol += yyleng; return  TOK_ASTERISCO;}
+{and}                 	{yycol += yyleng; return  TOK_AND;}
+{or}                  	{yycol += yyleng; return  TOK_OR;}
+{not}                 	{yycol += yyleng; return  TOK_NOT;}
+{igual}               	{yycol += yyleng; return  TOK_IGUAL;}
+{distinto}            	{yycol += yyleng; return  TOK_DISTINTO;}
+{menorigual}          	{yycol += yyleng; return  TOK_MENORIGUAL;}
+{mayorigual}          	{yycol += yyleng; return  TOK_MAYORIGUAL;}
+{menor}               	{yycol += yyleng; return  TOK_MENOR;}
+{mayor}               	{yycol += yyleng; return  TOK_MAYOR;}
+{constante_entera}    	{yycol += yyleng; return  TOK_CONSTANTE_ENTERA;}
+{true}                	{yycol += yyleng; return  TOK_TRUE;}
+{false}               	{yycol += yyleng; return  TOK_FALSE;}
+{identificador}       	{yycol += yyleng; return  TOK_IDENTIFICADOR;}
+{erroridentificador}    {yycol += yyleng; return  TOK_ERROR;}
+{error}               	{yycol += yyleng; return  TOK_ERROR;}
 %%

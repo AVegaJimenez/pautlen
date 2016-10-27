@@ -137,13 +137,12 @@ int main(int argc, char ** argv) {
                 if(yyleng == 1) {
                     fprintf(stderr, "****Error en [lin %ld, col %ld]: simbolo no permitido (%s)\n", yylin, yycol, yytext);
                 } else {
-                    fprintf(stderr, "****Error en [lin %ld, col %ld]: identificador demasiado largo (%s)\n", yylin, yycol, yytext);
+                    fprintf(stderr, "****Error en [lin %ld, col %ld]: identificador demasiado largo (%s)\n", yylin, yycol-yyleng+1, yytext);
                 }
                 fclose(yyin);
                 fclose(out);
                 return 1;
         }
-        yycol += yyleng;
     }
     fclose(yyin);
     fclose(out);
