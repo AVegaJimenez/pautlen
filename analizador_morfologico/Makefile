@@ -20,3 +20,6 @@ lex.yy.c: alfa.l
 
 clean:
 	rm -v ${BIN} *.o lex.yy.c
+
+zip:
+	zip Fuentes_Perdices_5_morfo.zip *.l *.c *.h Makefile
