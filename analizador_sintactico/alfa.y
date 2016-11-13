@@ -2,8 +2,10 @@
 #include <stdio.h>
 int yylex();
 int yyerror();
-extern int morf_err;
-FILE* out;
+extern char morf_err;
+extern FILE* out;
+extern long yylin;
+extern long yycol;
 %}
 
 %token TOK_MAIN               
@@ -63,10 +65,10 @@ FILE* out;
 %right TOK_NOT
 %%
               
-programa: TOK_MAIN TOK_LLAVEIZQUIERDA declaraciones funciones sentencias TOK_LLAVEDERECHA {fprintf(out, "<programa> ::= main {<declaraciones> <funciones> <sentencias> }");}
+programa: TOK_MAIN TOK_LLAVEIZQUIERDA declaraciones funciones sentencias TOK_LLAVEDERECHA {fprintf(out, ";R1:\t<programa> ::= main { <declaraciones> <funciones> <sentencias> }\n");}
 
-declaraciones: declaracion 			{fprintf(out, "<declaraciones> ::= <declaracion>");}
-	| declaracion declaraciones 	{fprintf(out, "<declaraciones> ::= <declaracion> <declaraciones>");}
+declaraciones: declaracion 			{fprintf(out, ";R2:\t<declaraciones> ::= <declaracion>\n");}
+	| declaracion declaraciones 	{fprintf(out, ";R3:\t<declaraciones> ::= <declaracion> <declaraciones>\t");}
 	;
 declaracion: clase identificadores TOK_PUNTOYCOMA
 clase: clase_escalar
@@ -172,7 +174,7 @@ identificador: TOK_IDENTIFICADOR
 %%
 
 int yyerror(char* s) {
-	if(morf_err==1) return -1;
-	printf("\nERROR SINTACTICO\n");
+	if(morf_err!=0) return -1;
+	printf("****Error sintactico en [lin %ld, col %ld]\n", yylin, yycol);
 	return -1;
 }

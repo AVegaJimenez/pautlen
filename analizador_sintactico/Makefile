@@ -1,5 +1,5 @@
 all: y.tab.c yy.lex.c
-	gcc *.c
+	gcc *.c -Wall -ansi -pedantic
 y.tab.c: alfa.y
 	bison -dyv alfa.y
 

@@ -3,14 +3,10 @@
 
 int yylex();
 int yyparse();
+FILE * out = NULL;
 
 int main(int argc, char ** argv) {
-    FILE * out = NULL;
-    int ret;
     extern FILE * yyin;
-    extern char * yytext;
-    extern int yyleng;
-    extern long yylin, yycol;
     yyin = fopen(argv[1], "r");
     if(yyin == NULL) {
         return 1;

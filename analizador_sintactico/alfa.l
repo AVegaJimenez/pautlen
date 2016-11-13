@@ -7,7 +7,7 @@
 long yylin = 1;
 long yycol = 1;
 extern FILE* out;
-int morf_err=0;
+char morf_err=0;
 %}
 %option noyywrap
 whitespace              [ \t]+
@@ -93,6 +93,6 @@ error               	.
 {true}                	{yycol += yyleng; return  TOK_TRUE;}
 {false}               	{yycol += yyleng; return  TOK_FALSE;}
 {identificador}       	{yycol += yyleng; return  TOK_IDENTIFICADOR;}
-{erroridentificador}    {yycol += yyleng; morf_err=1; return  TOK_ERROR;}
-{error}               	{yycol += yyleng; morf_err=2; return  TOK_ERROR;}
+{erroridentificador}    {yycol += yyleng; morf_err=1; printf("****Error en [lin %ld, col %ld]: simbolo no permitido (%s)\n", yylin, yycol, yytext); return  TOK_ERROR;}
+{error}               	{yycol += yyleng; morf_err=2; printf("****Error en [lin %ld, col %ld]: identificador demasiado largo (%s)\n", yylin, yycol, yytext); return  TOK_ERROR;}
 %%
