@@ -55,8 +55,8 @@ FILE* out;
 
 /* Errores */
 %token TOK_ERROR
-%left '+' '-'
-%left '*' '/'
+%left TOK_MAS TOK_MENOS
+%left TOK_ASTERISCO TOK_DIVISION
 %right MENOSU
 %%
               
@@ -64,68 +64,68 @@ programa: TOK_MAIN TOK_CORCHETEIZQUIERDO declaraciones funciones sentencias TOK_
 
 declaraciones: declaracion 			{fprintf(out, "<declaraciones> ::= <declaracion>");}
 	| declaracion declaraciones 	{fprintf(out, "<declaraciones> ::= <declaracion> <declaraciones>");}
-
+	;
 declaracion: clase identificadores TOK_PUNTOYCOMA
 clase: clase_escalar
 	| clase_vector
-
+	;
 clase_escalar: tipo
-
+	;
 tipo: TOK_INT
 	| TOK_BOOLEAN
-
+	;
 clase_vector: TOK_ARRAY tipo
 	| TOK_ARRAY tipo constante_entera
-
+	;
 identificadores: identificador
 	| identificador TOK_COMA identificadores
-
+	;
 funciones: funcion funciones 					
-	|								{/*VER GRAMATICA BIEN*/} 
-
-funcion: TOK_FUNCTION tipo identificador TOK_PARENTESISIZQUIERDO parametros_funcion TOK_PARENTESISDERECHO TOK_CORCHETEIZQUIERDO declaraciones funciones sentencias TOK_CORCHETEDERECHO
-
+	| %empty 								{/*VER GRAMATICA BIEN*/} 
+	;
+funcion: TOK_FUNCTION tipo identificador TOK_PARENTESISIZQUIERDO parametros_funcion TOK_PARENTESISDERECHO TOK_CORCHETEIZQUIERDO declaraciones_funcion sentencias TOK_CORCHETEDERECHO
+	;
 parametros_funcion: parametro_funcion resto_parametros_funcion
-
+	;
 resto_parametros_funcion: TOK_PUNTOYCOMA parametro_funcion resto_parametros_funcion
-	| 														{/*VER GRAMATICA BIEN*/} 
-
+	| %empty 														{/*VER GRAMATICA BIEN*/} 
+	;
 parametro_funcion: tipo identificador
-
+	;
 declaraciones_funcion: declaraciones
-	|
-
+	| %empty 
+	;
 sentencias: sentencia
 	| sentencia sentencias
-
+	;
 sentencia: sentencia_simple TOK_PUNTOYCOMA
 	| bloque
-
+	;
 sentencia_simple: asignacion
 	| lectura
 	| escritura
 	| retorno_funcion
-
+	;
 bloque: condicional
 	| bucle
-
+	;
 asignacion: identificador TOK_ASIGNACION exp
 	| elemento_vector TOK_ASIGNACION exp
-
+	;
 elemento_vector: identificador
 	| identificador exp
-
+	;
 condicional: TOK_IF TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO TOK_CORCHETEIZQUIERDO sentencias TOK_CORCHETEDERECHO
 	| TOK_IF TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO TOK_CORCHETEIZQUIERDO sentencias TOK_CORCHETEDERECHO TOK_ELSE TOK_CORCHETEIZQUIERDO sentencias TOK_CORCHETEDERECHO
-
+	;
 bucle: TOK_WHILE TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO TOK_CORCHETEIZQUIERDO sentencias TOK_CORCHETEDERECHO
-
+	;
 lectura: TOK_SCANF identificador
-
+	;
 escritura: TOK_PRINTF exp
-
+	;
 retorno_funcion: TOK_RETURN exp
-
+	;
 exp: exp TOK_MAS exp
 	| exp TOK_MENOS exp
 	| exp TOK_DIVISION exp
@@ -143,18 +143,18 @@ exp: exp TOK_MAS exp
 	;
 
 lista_expresiones: exp resto_lista_expresiones
-	|
-
+	| %empty 
+	;
 resto_lista_expresiones: TOK_COMA exp resto_lista_expresiones
-	|
-
+	| %empty 
+	;
 comparacion: exp TOK_IGUAL exp
 	| exp TOK_DISTINTO exp
 	| exp TOK_MENORIGUAL exp
 	| exp TOK_MAYORIGUAL exp
 	| exp TOK_MENOR exp
 	| exp TOK_MAYOR exp
-
+	;
 
 constante: constante_entera			{printf("REGLA: constante: TOK_CTE_ENTERA\n");}
 		 | constante_logica			{printf("REGLA: constante: TOK_CTE_REAL\n");}
@@ -162,11 +162,11 @@ constante: constante_entera			{printf("REGLA: constante: TOK_CTE_ENTERA\n");}
 
 constante_logica: TOK_TRUE
 	| TOK_FALSE
-
+	;
 constante_entera: TOK_CONSTANTE_ENTERA 				{/* REVISAR */}
-
+	;
 identificador: TOK_IDENTIFICADOR
-
+	;
 
 %%
 
