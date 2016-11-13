@@ -25,7 +25,7 @@ FILE* out;
 %token TOK_PARENTESISIZQUIERDO
 %token TOK_PARENTESISDERECHO  
 %token TOK_CORCHETEIZQUIERDO  
-%token TOK_CORCHETEDERECHO    
+%token TOK_CORCHETEDERECHO   
 %token TOK_LLAVEIZQUIERDA     
 %token TOK_LLAVEDERECHA       
 %token TOK_ASIGNACION         
@@ -55,12 +55,15 @@ FILE* out;
 
 /* Errores */
 %token TOK_ERROR
+
+%left TOK_AND TOK_OR
 %left TOK_MAS TOK_MENOS
 %left TOK_ASTERISCO TOK_DIVISION
 %right MENOSU
+%right TOK_NOT
 %%
               
-programa: TOK_MAIN TOK_CORCHETEIZQUIERDO declaraciones funciones sentencias TOK_CORCHETEDERECHO {fprintf(out, "<programa> ::= main {<declaraciones> <funciones> <sentencias> }");}
+programa: TOK_MAIN TOK_LLAVEIZQUIERDA declaraciones funciones sentencias TOK_LLAVEDERECHA {fprintf(out, "<programa> ::= main {<declaraciones> <funciones> <sentencias> }");}
 
 declaraciones: declaracion 			{fprintf(out, "<declaraciones> ::= <declaracion>");}
 	| declaracion declaraciones 	{fprintf(out, "<declaraciones> ::= <declaracion> <declaraciones>");}
@@ -74,26 +77,25 @@ clase_escalar: tipo
 tipo: TOK_INT
 	| TOK_BOOLEAN
 	;
-clase_vector: TOK_ARRAY tipo
-	| TOK_ARRAY tipo constante_entera
+clase_vector: TOK_ARRAY tipo TOK_CORCHETEIZQUIERDO constante_entera TOK_CORCHETEDERECHO
 	;
 identificadores: identificador
 	| identificador TOK_COMA identificadores
 	;
 funciones: funcion funciones 					
-	| %empty 								{/*VER GRAMATICA BIEN*/} 
+	|  								{/*VER GRAMATICA BIEN*/} 
 	;
-funcion: TOK_FUNCTION tipo identificador TOK_PARENTESISIZQUIERDO parametros_funcion TOK_PARENTESISDERECHO TOK_CORCHETEIZQUIERDO declaraciones_funcion sentencias TOK_CORCHETEDERECHO
+funcion: TOK_FUNCTION tipo identificador TOK_PARENTESISIZQUIERDO parametros_funcion TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA declaraciones_funcion sentencias TOK_LLAVEDERECHA
 	;
 parametros_funcion: parametro_funcion resto_parametros_funcion
 	;
 resto_parametros_funcion: TOK_PUNTOYCOMA parametro_funcion resto_parametros_funcion
-	| %empty 														{/*VER GRAMATICA BIEN*/} 
+	|  														{/*VER GRAMATICA BIEN*/} 
 	;
 parametro_funcion: tipo identificador
 	;
 declaraciones_funcion: declaraciones
-	| %empty 
+	|  
 	;
 sentencias: sentencia
 	| sentencia sentencias
@@ -109,16 +111,15 @@ sentencia_simple: asignacion
 bloque: condicional
 	| bucle
 	;
-asignacion: identificador TOK_ASIGNACION exp
+asignacion: identificador TOK_ASIGNACION exp 
 	| elemento_vector TOK_ASIGNACION exp
 	;
-elemento_vector: identificador
-	| identificador exp
+elemento_vector: identificador TOK_CORCHETEIZQUIERDO exp TOK_CORCHETEDERECHO
 	;
-condicional: TOK_IF TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO TOK_CORCHETEIZQUIERDO sentencias TOK_CORCHETEDERECHO
-	| TOK_IF TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO TOK_CORCHETEIZQUIERDO sentencias TOK_CORCHETEDERECHO TOK_ELSE TOK_CORCHETEIZQUIERDO sentencias TOK_CORCHETEDERECHO
+condicional: TOK_IF TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA sentencias TOK_LLAVEDERECHA
+	| TOK_IF TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA sentencias TOK_LLAVEDERECHA TOK_ELSE TOK_LLAVEIZQUIERDA sentencias TOK_LLAVEDERECHA
 	;
-bucle: TOK_WHILE TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO TOK_CORCHETEIZQUIERDO sentencias TOK_CORCHETEDERECHO
+bucle: TOK_WHILE TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA sentencias TOK_LLAVEDERECHA
 	;
 lectura: TOK_SCANF identificador
 	;
@@ -143,10 +144,10 @@ exp: exp TOK_MAS exp
 	;
 
 lista_expresiones: exp resto_lista_expresiones
-	| %empty 
+	|  
 	;
 resto_lista_expresiones: TOK_COMA exp resto_lista_expresiones
-	| %empty 
+	|  
 	;
 comparacion: exp TOK_IGUAL exp
 	| exp TOK_DISTINTO exp
