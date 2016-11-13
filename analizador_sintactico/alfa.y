@@ -67,25 +67,25 @@ extern long yycol;
               
 programa: TOK_MAIN TOK_LLAVEIZQUIERDA declaraciones funciones sentencias TOK_LLAVEDERECHA {fprintf(out, ";R1:\t<programa> ::= main { <declaraciones> <funciones> <sentencias> }\n");}
 
-declaraciones: declaracion 			{fprintf(out, ";R2:\t<declaraciones> ::= <declaracion>\n");}
-	| declaracion declaraciones 	{fprintf(out, ";R3:\t<declaraciones> ::= <declaracion> <declaraciones>\t");}
+declaraciones: declaracion {fprintf(out, ";R2:\t<declaraciones> ::= <declaracion>\n");}
+	| declaracion declaraciones {fprintf(out, ";R3:\t<declaraciones> ::= <declaracion> <declaraciones>\n");}
 	;
-declaracion: clase identificadores TOK_PUNTOYCOMA
-clase: clase_escalar
-	| clase_vector
+declaracion: clase identificadores TOK_PUNTOYCOMA {fprintf(out, ";R4:\t<declaracion> ::= <clase> <identificadores> ;\n");}
+clase: clase_escalar {fprintf(out, ";R5:\t<clase> ::= <clase_escalar>\n");}
+	| clase_vector {fprintf(out, ";R7:\t<clase> ::= <clase_vector>\n");}
 	;
-clase_escalar: tipo
+clase_escalar: tipo {fprintf(out, ";R9:\t<clase_escalar> ::= <tipo>\n");}
 	;
-tipo: TOK_INT
-	| TOK_BOOLEAN
+tipo: TOK_INT {fprintf(out, ";R10:\t<tipo> ::= int\n");}
+	| TOK_BOOLEAN {fprintf(out, ";R11:\t<tipo> ::= boolean\n");}
 	;
-clase_vector: TOK_ARRAY tipo TOK_CORCHETEIZQUIERDO constante_entera TOK_CORCHETEDERECHO
+clase_vector: TOK_ARRAY tipo TOK_CORCHETEIZQUIERDO constante_entera TOK_CORCHETEDERECHO {fprintf(out, ";R15:\t<clase_vector> ::= array <tipo> [ <constante_entera> ]\n");}
 	;
-identificadores: identificador
-	| identificador TOK_COMA identificadores
+identificadores: identificador {fprintf(out, ";R18:\t<identificadores> ::= <identificador>\n");}
+	| identificador TOK_COMA identificadores {fprintf(out, ";R19:\t<identificadores> ::= <identificador> , <identificadores>\n");}
 	;
-funciones: funcion funciones 					
-	|  								{/*VER GRAMATICA BIEN*/} 
+funciones: funcion funciones {fprintf(out, ";R20:\t<funciones> ::= <funcion> <funciones>\n");}					
+	| {fprintf(out, ";R21:\t<funciones> ::=\n");} 
 	;
 funcion: TOK_FUNCTION tipo identificador TOK_PARENTESISIZQUIERDO parametros_funcion TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA declaraciones_funcion sentencias TOK_LLAVEDERECHA
 	;
