@@ -96,6 +96,6 @@ error               	.
 {true}                	{yycol += yyleng; _print_token(out); return  TOK_TRUE;}
 {false}               	{yycol += yyleng; _print_token(out); return  TOK_FALSE;}
 {identificador}       	{yycol += yyleng; _print_token(out); return  TOK_IDENTIFICADOR;}
-{erroridentificador}    {fprintf(stderr, "****Error en [lin %ld, col %ld]: simbolo no permitido (%s)\n", yylin, yycol+1, yytext); yycol += yyleng; yymorph = 1; return  TOK_ERROR;}
-{error}               	{fprintf(stderr, "****Error en [lin %ld, col %ld]: identificador demasiado largo (%s)\n", yylin, yycol+1, yytext); yycol += yyleng; yymorph = 2; return  TOK_ERROR;}
+{erroridentificador}    {fprintf(stderr, "****Error en [lin %ld, col %ld]: identificador demasiado largo (%s)\n", yylin, yycol+1, yytext); yycol += yyleng; yymorph = 2; return  TOK_ERROR;}
+{error}                 {fprintf(stderr, "****Error en [lin %ld, col %ld]: simbolo no permitido (%s)\n", yylin, yycol+1, yytext); yycol += yyleng; yymorph = 1; return  TOK_ERROR;}
 %%
