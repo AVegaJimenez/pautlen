@@ -194,7 +194,7 @@ constante_logica: TOK_TRUE {fprintf(out, ";R102:\t<constante_logica> ::= true\n"
                 | TOK_FALSE {fprintf(out, ";R103:\t<constante_logica> ::= false\n");}
                 ;
 
-constante_entera: TOK_CONSTANTE_ENTERA {fprintf(out, ";R104:\t<constante_entera> ::= <numero>\n");}
+constante_entera: TOK_CONSTANTE_ENTERA {fprintf(out, ";R104:\t<constante_entera> ::= TOK_CONSTANTE_ENTERA\n");}
                 ;
 
 identificador: TOK_IDENTIFICADOR {fprintf(out, ";R108:\t<identificador> ::= TOK_IDENTIFICADOR\n");}
