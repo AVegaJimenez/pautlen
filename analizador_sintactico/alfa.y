@@ -56,11 +56,9 @@ extern int yymorph;
 /* Errores */
 %token TOK_ERROR
 
-%left TOK_AND TOK_OR
-%left TOK_MAS TOK_MENOS
-%left TOK_ASTERISCO TOK_DIVISION
-%right MENOSU
-%right TOK_NOT
+%left TOK_MAS TOK_MENOS TOK_OR
+%left TOK_ASTERISCO TOK_DIVISION TOK_AND
+%right MENOSU TOK_NOT
 %%
 
 programa: TOK_MAIN TOK_LLAVEIZQUIERDA declaraciones funciones sentencias TOK_LLAVEDERECHA {fprintf(out, ";R1:\t<programa> ::= main { <declaraciones> <funciones> <sentencias> }\n");}

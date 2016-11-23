@@ -18,9 +18,9 @@ int main(int argc, char ** argv) {
     }
 
     if(yyparse()!=0){
-        printf("EXPRESION INCORRECTA\n");
+        /* Caso de error */
     } else {
-        printf("EXPRESION CORRECTA\n");
+        /* Caso correcto */
     }
 
     fclose(yyin);
