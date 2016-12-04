@@ -58,6 +58,20 @@ void mayor(FILE* fpasm, int es_inmediato_1, int es_inmediato_2, int cuantas_comp
 
 void menor(FILE* fpasm, int es_inmediato_1, int es_inmediato_2, int cuantas_comparaciones);
 
+void inicio_condicional(FILE* fpasm, int es_inmediato, int cuantos_condicionales);
+
+void sino_condicional(FILE* fpasm, int cuantos_condicionales);
+
+void etiqueta_final_condicional_simple(FILE* fpasm, int cuantos_condicionales);
+
+void etiqueta_final_condicional_compuesto(FILE* fpasm, int cuantos_condicionales);
+
+void etiqueta_inicio_while(FILE* fpasm, int cuantos_bucles);
+
+void inicio_bucle(FILE* fpasm, int es_inmediato, int cuantos_bucles);
+
+void etiqueta_final_while(FILE* fpasm, int cuantos_bucles);
+
 #endif
 
 

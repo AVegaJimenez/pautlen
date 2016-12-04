@@ -1,6 +1,6 @@
 %{
 #include <stdio.h>
-#include <strings.h>
+#include <string.h>
 #include "alfa.h"
 
 int yylex();
@@ -20,6 +20,8 @@ INFO_SIMBOLO inserta;
 
 int cuantos_no=0;
 int cuantas_comparaciones=0;
+int cuantos_condicionales=0;
+int cuantos_bucles=0;
 %}
 
 /* Palabras reservadas */
@@ -74,6 +76,12 @@ int cuantas_comparaciones=0;
 %type <atributos> constante_logica
 %type <atributos> constante
 %type <atributos> exp
+
+%type <atributos> if_exp
+%type <atributos> if_exp_sentencias
+
+%type <atributos> while
+%type <atributos> while_exp
 
 %left TOK_MAS TOK_MENOS TOK_OR
 %left TOK_ASTERISCO TOK_DIVISION TOK_AND
@@ -182,12 +190,48 @@ asignacion: TOK_IDENTIFICADOR TOK_ASIGNACION exp  {
 elemento_vector: TOK_IDENTIFICADOR TOK_CORCHETEIZQUIERDO exp TOK_CORCHETEDERECHO {fprintf(out, ";R48:\t<elemento_vector> ::= <identificador> [ <exp> ]\n");}
                ;
 
-condicional: TOK_IF TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA sentencias TOK_LLAVEDERECHA {fprintf(out, ";R50:\t<condicional> ::= if ( <exp> ) { <sentencias> }\n");}
-           | TOK_IF TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA sentencias TOK_LLAVEDERECHA TOK_ELSE TOK_LLAVEIZQUIERDA sentencias TOK_LLAVEDERECHA {fprintf(out, ";R51:\t<condicional> ::= if ( <exp> ) { <sentencias> } else { <sentencias> }\n");}
+condicional: if_exp_sentencias TOK_LLAVEDERECHA {
+  etiqueta_final_condicional_compuesto(out, $1.etiqueta);
+  fprintf(out, ";R50:\t<condicional> ::= if ( <exp> ) { <sentencias> }\n");
+}
+           | if_exp_sentencias TOK_LLAVEDERECHA TOK_ELSE TOK_LLAVEIZQUIERDA sentencias TOK_LLAVEDERECHA {
+            etiqueta_final_condicional_compuesto(out, $1.etiqueta);
+            fprintf(out, ";R51:\t<condicional> ::= if ( <exp> ) { <sentencias> } else { <sentencias> }\n");}
            ;
 
-bucle: TOK_WHILE TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA sentencias TOK_LLAVEDERECHA {fprintf(out, ";R52:\t<bucle> ::= while ( <exp> ) { <sentencias> }\n");}
+if_exp: TOK_IF TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA {
+    if($3.tipo != BOOLEANO) {
+      //error
+    }
+    $$.etiqueta = cuantos_condicionales++;
+    inicio_condicional(out, $3.es_direccion?0:1, $$.etiqueta);
+  }
+
+if_exp_sentencias:  if_exp sentencias {
+  $$.etiqueta = $1.etiqueta;
+  sino_condicional(out, $$.etiqueta);
+
+}
+
+
+bucle: while_exp sentencias TOK_LLAVEDERECHA {
+  etiqueta_final_while(out, $1.etiqueta);
+  fprintf(out, ";R52:\t<bucle> ::= while ( <exp> ) { <sentencias> }\n");}
      ;
+
+while: TOK_WHILE TOK_PARENTESISIZQUIERDO {
+  $$.etiqueta = cuantos_bucles++;
+  etiqueta_inicio_while(out, $$.etiqueta);
+}
+
+while_exp: while exp TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA {
+  if($2.tipo != BOOLEANO) {
+    //ERROR
+  }
+
+  $$.etiqueta = $1.etiqueta;
+  inicio_bucle(out, $2.es_direccion?0:1, $$.etiqueta);
+};
 
 lectura: TOK_SCANF TOK_IDENTIFICADOR {
     read = BuscarSimbolo($2.nombre);
@@ -400,6 +444,7 @@ identificador: TOK_IDENTIFICADOR {
 escribirTabla: { /* Escribir tabla de simbolos a nasm */ escribir_segmento_codigo(out); }
 
 escribirMain: { escribir_inicio_main(out);}
+
 %%
 
 void yyerror(const char * s) {

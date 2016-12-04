@@ -317,59 +317,99 @@ void comparacion(FILE* fpasm, int es_inmediato_1, int es_inmediato_2) {
 void distinto(FILE* fpasm, int es_inmediato_1, int es_inmediato_2, int cuantas_comparaciones) {
 	comparacion(fpasm, es_inmediato_1, es_inmediato_2);
 
-	fprintf(fpasm, "jne cmp_%d\n", cuantas_comparaciones);
+	fprintf(fpasm, "jne near __cmp_%d\n", cuantas_comparaciones);
 	fprintf(fpasm, "push dword 0\n");
-	fprintf(fpasm, "jmp cmp_fin_%d\n", cuantas_comparaciones);
-	fprintf(fpasm, "cmp_%d: push dword 1\n", cuantas_comparaciones);
-	fprintf(fpasm, "cmp_fin_%d:\n", cuantas_comparaciones);
+	fprintf(fpasm, "jmp near __cmp_fin_%d\n", cuantas_comparaciones);
+	fprintf(fpasm, "__cmp_%d: push dword 1\n", cuantas_comparaciones);
+	fprintf(fpasm, "__cmp_fin_%d:\n", cuantas_comparaciones);
 }
 
 void igual(FILE* fpasm, int es_inmediato_1, int es_inmediato_2, int cuantas_comparaciones) {
 	comparacion(fpasm, es_inmediato_1, es_inmediato_2);
 
-	fprintf(fpasm, "je cmp_%d\n", cuantas_comparaciones);
+	fprintf(fpasm, "je near __cmp_%d\n", cuantas_comparaciones);
 	fprintf(fpasm, "push dword 0\n");
-	fprintf(fpasm, "jmp cmp_fin_%d\n", cuantas_comparaciones);
-	fprintf(fpasm, "cmp_%d: push dword 1\n", cuantas_comparaciones);
-	fprintf(fpasm, "cmp_fin_%d:\n", cuantas_comparaciones);
+	fprintf(fpasm, "jmp near __cmp_fin_%d\n", cuantas_comparaciones);
+	fprintf(fpasm, "__cmp_%d: push dword 1\n", cuantas_comparaciones);
+	fprintf(fpasm, "__cmp_fin_%d:\n", cuantas_comparaciones);
 }
 
 void menor(FILE* fpasm, int es_inmediato_1, int es_inmediato_2, int cuantas_comparaciones) {
 	comparacion(fpasm, es_inmediato_1, es_inmediato_2);
 
-	fprintf(fpasm, "jl cmp_%d\n", cuantas_comparaciones);
+	fprintf(fpasm, "jl near __cmp_%d\n", cuantas_comparaciones);
 	fprintf(fpasm, "push dword 0\n");
-	fprintf(fpasm, "jmp cmp_fin_%d\n", cuantas_comparaciones);
-	fprintf(fpasm, "cmp_%d: push dword 1\n", cuantas_comparaciones);
-	fprintf(fpasm, "cmp_fin_%d:\n", cuantas_comparaciones);
+	fprintf(fpasm, "jmp near __cmp_fin_%d\n", cuantas_comparaciones);
+	fprintf(fpasm, "__cmp_%d: push dword 1\n", cuantas_comparaciones);
+	fprintf(fpasm, "__cmp_fin_%d:\n", cuantas_comparaciones);
 }
 
 void mayor(FILE* fpasm, int es_inmediato_1, int es_inmediato_2, int cuantas_comparaciones) {
 	comparacion(fpasm, es_inmediato_1, es_inmediato_2);
 
-	fprintf(fpasm, "jg cmp_%d\n", cuantas_comparaciones);
+	fprintf(fpasm, "jg near __cmp_%d\n", cuantas_comparaciones);
 	fprintf(fpasm, "push dword 0\n");
-	fprintf(fpasm, "jmp cmp_fin_%d\n", cuantas_comparaciones);
-	fprintf(fpasm, "cmp_%d: push dword 1\n", cuantas_comparaciones);
-	fprintf(fpasm, "cmp_fin_%d:\n", cuantas_comparaciones);
+	fprintf(fpasm, "jmp near __cmp_fin_%d\n", cuantas_comparaciones);
+	fprintf(fpasm, "__cmp_%d: push dword 1\n", cuantas_comparaciones);
+	fprintf(fpasm, "__cmp_fin_%d:\n", cuantas_comparaciones);
 }
 
 void mayorigual(FILE* fpasm, int es_inmediato_1, int es_inmediato_2, int cuantas_comparaciones) {
 	comparacion(fpasm, es_inmediato_1, es_inmediato_2);
 
-	fprintf(fpasm, "jge cmp_%d\n", cuantas_comparaciones);
+	fprintf(fpasm, "jge near __cmp_%d\n", cuantas_comparaciones);
 	fprintf(fpasm, "push dword 0\n");
-	fprintf(fpasm, "jmp cmp_fin_%d\n", cuantas_comparaciones);
-	fprintf(fpasm, "cmp_%d: push dword 1\n", cuantas_comparaciones);
-	fprintf(fpasm, "cmp_fin_%d:\n", cuantas_comparaciones);
+	fprintf(fpasm, "jmp near __cmp_fin_%d\n", cuantas_comparaciones);
+	fprintf(fpasm, "__cmp_%d: push dword 1\n", cuantas_comparaciones);
+	fprintf(fpasm, "__cmp_fin_%d:\n", cuantas_comparaciones);
 }
 
 void menorigual(FILE* fpasm, int es_inmediato_1, int es_inmediato_2, int cuantas_comparaciones) {
 	comparacion(fpasm, es_inmediato_1, es_inmediato_2);
 
-	fprintf(fpasm, "jle cmp_%d\n", cuantas_comparaciones);
+	fprintf(fpasm, "jle near __cmp_%d\n", cuantas_comparaciones);
 	fprintf(fpasm, "push dword 0\n");
-	fprintf(fpasm, "jmp cmp_fin_%d\n", cuantas_comparaciones);
-	fprintf(fpasm, "cmp_%d: push dword 1\n", cuantas_comparaciones);
-	fprintf(fpasm, "cmp_fin_%d:\n", cuantas_comparaciones);
+	fprintf(fpasm, "jmp near __cmp_fin_%d\n", cuantas_comparaciones);
+	fprintf(fpasm, "__cmp_%d: push dword 1\n", cuantas_comparaciones);
+	fprintf(fpasm, "__cmp_fin_%d:\n", cuantas_comparaciones);
+}
+
+void inicio_condicional(FILE* fpasm, int es_inmediato, int cuantos_condicionales) {
+	fprintf(fpasm, "pop dword eax\n");
+	if (!es_inmediato) {
+		fprintf(fpasm, "mov eax, [eax]\n");
+	}
+	fprintf(fpasm, "cmp eax, 1\n");
+	fprintf(fpasm, "jne near __final_condicional_%d\n", cuantos_condicionales);
+}
+
+void sino_condicional(FILE* fpasm, int cuantos_condicionales) {
+	fprintf(fpasm, "jmp near __final_else_condicional_%d\n", cuantos_condicionales);
+	fprintf(fpasm, "__final_condicional_%d:\n", cuantos_condicionales);
+}
+
+void etiqueta_final_condicional_simple(FILE* fpasm, int cuantos_condicionales) {
+	fprintf(fpasm, "__final_condicional_%d:\n", cuantos_condicionales);
+}
+
+void etiqueta_final_condicional_compuesto(FILE* fpasm, int cuantos_condicionales) {
+	fprintf(fpasm, "__final_else_condicional_%d:\n", cuantos_condicionales);
+}
+
+void etiqueta_inicio_while(FILE* fpasm, int cuantos_bucles) {
+	fprintf(fpasm, "__inicio_bucle_%d\n", cuantos_bucles);
+}
+
+void inicio_bucle(FILE* fpasm, int es_inmediato, int cuantos_bucles) {
+	fprintf(fpasm, "pop dword eax\n");
+	if (!es_inmediato) {
+		fprintf(fpasm, "mov eax, [eax]\n");
+	}
+	fprintf(fpasm, "cmp eax, 1\n");
+	fprintf(fpasm, "jne near __final_bucle_%d\n", cuantos_bucles);
+}
+
+void etiqueta_final_while(FILE* fpasm, int cuantos_bucles) {
+	fprintf(fpasm, "jmp near __inicio_bucle_%d\n", cuantos_bucles);
+	fprintf(fpasm, "__final_bucle_%d:\n", cuantos_bucles);
 }
