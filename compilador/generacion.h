@@ -46,6 +46,17 @@ void leer(FILE * fpasm, char * nombre, int tipo);
 
 void escribir(FILE * fpasm, int es_inmediato, int tipo);
 
+void distinto(FILE* fpasm, int es_inmediato_1, int es_inmediato_2, int cuantas_comparaciones);
+
+void igual(FILE* fpasm, int es_inmediato_1, int es_inmediato_2, int cuantas_comparaciones);
+
+void menorigual(FILE* fpasm, int es_inmediato_1, int es_inmediato_2, int cuantas_comparaciones);
+
+void mayorigual(FILE* fpasm, int es_inmediato_1, int es_inmediato_2, int cuantas_comparaciones);
+
+void mayor(FILE* fpasm, int es_inmediato_1, int es_inmediato_2, int cuantas_comparaciones);
+
+void menor(FILE* fpasm, int es_inmediato_1, int es_inmediato_2, int cuantas_comparaciones);
 
 #endif
 

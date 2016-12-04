@@ -5,6 +5,7 @@
 #include "tablaSimbolos.h"
 #include "generacion.h"
 #define MAX_LONG 100
+
 struct _tipo_atributos {
 	char nombre[MAX_LONG + 1];
 	int tipo;

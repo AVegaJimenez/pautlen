@@ -1,0 +1,12 @@
+main {
+	int x, y;
+	x = 8;
+	y=3;
+	x = x+y;
+	printf x;
+	x = x*3;
+	printf x;
+	x = x*y;
+	printf x;
+	printf -x;
+}

@@ -1,0 +1,11 @@
+main {
+	boolean x;
+	x = true;
+	printf x;
+	x = false;
+	printf x;
+	x = x && true;
+	printf x;
+	x = x || true;
+	printf x;
+}

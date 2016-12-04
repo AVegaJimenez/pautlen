@@ -1,5 +1,6 @@
 %{
 #include <stdio.h>
+#include <strings.h>
 #include "alfa.h"
 
 int yylex();
@@ -16,6 +17,9 @@ int tamano_vector_actual;
 INFO_SIMBOLO* read;
 
 INFO_SIMBOLO inserta;
+
+int cuantos_no=0;
+int cuantas_comparaciones=0;
 %}
 
 /* Palabras reservadas */
@@ -167,7 +171,8 @@ asignacion: TOK_IDENTIFICADOR TOK_ASIGNACION exp  {
         // return -1;
   
         }
-      fprintf(out, ";R43:\t<asignacion> ::= <identificador> = <exp>\n");
+        asignar(out, $1.nombre, $3.es_direccion?0:1);
+        fprintf(out, ";R43:\t<asignacion> ::= <identificador> = <exp>\n");
     }
   }
 
@@ -189,7 +194,9 @@ lectura: TOK_SCANF TOK_IDENTIFICADOR {
     if(read == NULL) {
       //ERROR
     }
-    leer(out, $2.nombre, read->tipo); fprintf(out, ";R54:\t<lectura> ::= scanf <identificador>\n");};
+    leer(out, $2.nombre, read->tipo); 
+    fprintf(out, ";R54:\t<lectura> ::= scanf <identificador>\n");
+};
 
 escritura: TOK_PRINTF exp {
     escribir(out, !($2.es_direccion), ($2.tipo));
@@ -200,32 +207,118 @@ escritura: TOK_PRINTF exp {
 retorno_funcion: TOK_RETURN exp {fprintf(out, ";R61:\t<retorno_funcion> ::= return <exp>\n");}
                ;
 
-exp: exp TOK_MAS exp {fprintf(out, ";R72:\t<exp> ::= <exp> + <exp>\n");}
-   | exp TOK_MENOS exp {fprintf(out, ";R73:\t<exp> ::= <exp> - <exp>\n");}
-   | exp TOK_DIVISION exp {fprintf(out, ";R74:\t<exp> ::= <exp> / <exp>\n");}
-   | exp TOK_ASTERISCO exp {fprintf(out, ";R75:\t<exp> ::= <exp> * <exp>\n");}
-   | TOK_MENOS exp %prec MENOSU {fprintf(out, ";R76:\t<exp> ::= - <exp>\n");}
-   | exp TOK_AND exp {fprintf(out, ";R77:\t<exp> ::= <exp> && <exp>\n");}
-   | exp TOK_OR exp {fprintf(out, ";R78:\t<exp> ::= <exp> || <exp>\n");}
-   | TOK_NOT exp {fprintf(out, ";R79:\t<exp> ::= ! <exp>\n");}
+exp: exp TOK_MAS exp {
+  if($1.tipo!=ENTERO || $3.tipo != ENTERO) {
+    //ERROR
+  }
+  sumar(out, $1.es_direccion?0:1, $3.es_direccion?0:1);
+  $$.es_direccion = 0;
+  $$.tipo = ENTERO;
+
+  fprintf(out, ";R72:\t<exp> ::= <exp> + <exp>\n");
+}
+
+   | exp TOK_MENOS exp {
+  if($1.tipo!=ENTERO || $3.tipo != ENTERO) {
+    //ERROR
+  }
+  $$.tipo = ENTERO;
+  restar(out, $1.es_direccion?0:1, $3.es_direccion?0:1);
+  $$.es_direccion = 0;
+    fprintf(out, ";R73:\t<exp> ::= <exp> - <exp>\n");
+}
+
+   | exp TOK_DIVISION exp {
+  if($1.tipo!=ENTERO || $3.tipo != ENTERO) {
+    //ERROR
+  }
+  $$.tipo = ENTERO;
+  dividir(out, $1.es_direccion?0:1, $3.es_direccion?0:1);
+  $$.es_direccion = 0;
+    fprintf(out, ";R74:\t<exp> ::= <exp> / <exp>\n");
+}
+
+   | exp TOK_ASTERISCO exp {
+  if($1.tipo!=ENTERO || $3.tipo != ENTERO) {
+    //ERROR
+  }
+  $$.tipo = ENTERO;
+  multiplicar(out, $1.es_direccion?0:1, $3.es_direccion?0:1);
+  $$.es_direccion = 0;
+    fprintf(out, ";R75:\t<exp> ::= <exp> * <exp>\n");
+}
+
+   | TOK_MENOS exp %prec MENOSU {
+    if($2.tipo!=ENTERO) {
+    //ERROR
+    }
+    $$.tipo = ENTERO;
+    cambiar_signo(out, $2.es_direccion?0:1);
+    $$.es_direccion = 0;
+    fprintf(out, ";R76:\t<exp> ::= - <exp>\n");
+}
+   | exp TOK_AND exp {
+    if($1.tipo!=BOOLEANO || $3.tipo != BOOLEANO) {
+    //ERROR
+    }
+    $$.tipo = BOOLEANO;
+    y(out, $1.es_direccion?0:1, $3.es_direccion?0:1);
+    $$.es_direccion = 0;
+    fprintf(out, ";R77:\t<exp> ::= <exp> && <exp>\n");
+}
+   | exp TOK_OR exp {
+    if($1.tipo!=BOOLEANO || $3.tipo != BOOLEANO) {
+    //ERROR
+    }
+    $$.tipo = BOOLEANO;
+    o(out, $1.es_direccion?0:1, $3.es_direccion?0:1);
+    $$.es_direccion = 0;
+    fprintf(out, ";R77:\t<exp> ::= <exp> && <exp>\n");
+    fprintf(out, ";R78:\t<exp> ::= <exp> || <exp>\n");
+  }
+   | TOK_NOT exp {
+    if($2.tipo!=BOOLEANO) {
+    //ERROR
+    }
+    $$.tipo = BOOLEANO;
+    no(out, $2.es_direccion?0:1, cuantos_no++);
+    $$.es_direccion = 0;
+    fprintf(out, ";R79:\t<exp> ::= ! <exp>\n");
+}
    | TOK_IDENTIFICADOR {
     strcpy($$.nombre, $1.nombre);
     read = BuscarSimbolo($1.nombre);
     if(read == NULL) {
       //ERROR
     }
+
+    if(read->categoria==FUNCION) {
+      fprintf(stderr,"Identificador no valido\n");
+    }
     $$.tipo = read->tipo;
-    //$$.clase = read->clase;
-    $$.es_direccion = 0;
-    escribir_operando(out, $1.nombre, 0);
+    
+    $$.es_direccion = 1;
+    escribir_operando(out, $1.nombre, 1);
     fprintf(out, ";R80:\t<exp> ::= <identificador>\n");
 
   }
    | constante {
-    escribir_operando(out, $1.nombre, 1);
-    fprintf(out, ";R81:\t<exp> ::= <constante>\n");}
-   | TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO {fprintf(out, ";R82:\t<exp> ::= ( <exp> )\n");}
-   | TOK_PARENTESISIZQUIERDO comparacion TOK_PARENTESISDERECHO {fprintf(out, ";R83:\t<exp> ::= ( <comparacion> )\n");}
+    $$.tipo =$1.tipo;
+    $$.es_direccion = $1.es_direccion;
+    escribir_operando(out, $1.nombre, 0);
+    fprintf(out, ";R81:\t<exp> ::= <constante>\n");
+  }
+   | TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO {
+    $$.tipo =$2.tipo;
+    $$.es_direccion = $2.es_direccion;
+    fprintf(out, ";R82:\t<exp> ::= ( <exp> )\n");
+  }
+   | TOK_PARENTESISIZQUIERDO comparacion TOK_PARENTESISDERECHO {
+    $$.tipo =BOOLEANO;
+    $$.es_direccion = 0;
+    fprintf(out, ";R82:\t<exp> ::= ( <exp> )\n");
+    fprintf(out, ";R83:\t<exp> ::= ( <comparacion> )\n");
+  }
    | elemento_vector {fprintf(out, ";R85:\t<exp> ::= <elemento_vector>\n");}
    | TOK_IDENTIFICADOR TOK_PARENTESISIZQUIERDO lista_expresiones TOK_PARENTESISDERECHO {fprintf(out, ";R88:\t<exp> ::= <identificador> ( <lista_expresiones> )\n");}
    ;
@@ -238,23 +331,51 @@ resto_lista_expresiones: TOK_COMA exp resto_lista_expresiones {fprintf(out, ";R9
                        |   {fprintf(out, ";R92:\t<resto_lista_expresiones> ::=\n");}
                        ;
 
-comparacion: exp TOK_IGUAL exp {fprintf(out, ";R93:\t<comparacion> ::= <exp> == <exp>\n");}
-           | exp TOK_DISTINTO exp {fprintf(out, ";R94:\t<comparacion> ::= <exp> != <exp>\n");}
-           | exp TOK_MENORIGUAL exp {fprintf(out, ";R95:\t<comparacion> ::= <exp> <= <exp>\n");}
-           | exp TOK_MAYORIGUAL exp {fprintf(out, ";R96:\t<comparacion> ::= <exp> >= <exp>\n");}
-           | exp TOK_MENOR exp {fprintf(out, ";R97:\t<comparacion> ::= <exp> < <exp>\n");}
-           | exp TOK_MAYOR exp {fprintf(out, ";R98:\t<comparacion> ::= <exp> > <exp>\n");}
+comparacion: exp TOK_IGUAL exp {
+  igual(out, $1.es_direccion?0:1, $3.es_direccion?0:1, cuantas_comparaciones++);
+  //$$.tipo = BOOLEANO;
+  //$$.es_direccion = 0;
+  fprintf(out, ";R93:\t<comparacion> ::= <exp> == <exp>\n");
+}
+           | exp TOK_DISTINTO exp {
+            distinto(out, $1.es_direccion?0:1, $3.es_direccion?0:1, cuantas_comparaciones++); 
+            fprintf(out, ";R94:\t<comparacion> ::= <exp> != <exp>\n");
+            }
+           | exp TOK_MENORIGUAL exp {
+            if($1.tipo != ENTERO || $3.tipo != ENTERO) {
+              //ERROR
+            }
+            menorigual(out, $1.es_direccion?0:1, $3.es_direccion?0:1, cuantas_comparaciones++);
+            fprintf(out, ";R95:\t<comparacion> ::= <exp> <= <exp>\n");}
+           | exp TOK_MAYORIGUAL exp {
+            if($1.tipo != ENTERO || $3.tipo != ENTERO) {
+              //ERROR
+            }
+            mayorigual(out, $1.es_direccion?0:1, $3.es_direccion?0:1, cuantas_comparaciones++);
+            fprintf(out, ";R96:\t<comparacion> ::= <exp> >= <exp>\n");}
+           | exp TOK_MENOR exp {
+            if($1.tipo != ENTERO || $3.tipo != ENTERO) {
+              //ERROR
+            }
+            menor(out, $1.es_direccion?0:1, $3.es_direccion?0:1, cuantas_comparaciones++);
+            fprintf(out, ";R97:\t<comparacion> ::= <exp> < <exp>\n");}
+           | exp TOK_MAYOR exp {
+            if($1.tipo != ENTERO || $3.tipo != ENTERO) {
+              //ERROR
+            }
+            mayor(out, $1.es_direccion?0:1, $3.es_direccion?0:1, cuantas_comparaciones++);
+            fprintf(out, ";R98:\t<comparacion> ::= <exp> > <exp>\n");}
            ;
 
-constante: constante_entera {$$.tipo = $1.tipo; $$.es_direccion = $1.es_direccion; fprintf(out, ";R99:\t<constante> ::= <constante_logica>\n");}
-         | constante_logica {$$.tipo = $1.tipo; $$.es_direccion = $1.es_direccion; fprintf(out, ";R100:\t<constante> ::= <constante_entera>\n");}
+constante: constante_entera {$$.tipo = $1.tipo; $$.es_direccion = $1.es_direccion; strcpy($$.nombre, $1.nombre); fprintf(out, ";R99:\t<constante> ::= <constante_logica>\n");}
+         | constante_logica {$$.tipo = $1.tipo; $$.es_direccion = $1.es_direccion; strcpy($$.nombre, $1.nombre); fprintf(out, ";R100:\t<constante> ::= <constante_entera>\n");}
          ;
 
-constante_logica: TOK_TRUE {$$.tipo = BOOLEANO; $$.es_direccion = 0; fprintf(out, ";R102:\t<constante_logica> ::= true\n");}
-                | TOK_FALSE {$$.tipo = BOOLEANO; $$.es_direccion = 0; fprintf(out, ";R103:\t<constante_logica> ::= false\n");}
+constante_logica: TOK_TRUE {$$.tipo = BOOLEANO; $$.es_direccion = 0; strcpy($$.nombre,"1"); fprintf(out, ";R102:\t<constante_logica> ::= true\n");}
+                | TOK_FALSE {$$.tipo = BOOLEANO; $$.es_direccion = 0; strcpy($$.nombre,"0"); fprintf(out, ";R103:\t<constante_logica> ::= false\n");}
                 ;
 
-constante_entera: TOK_CONSTANTE_ENTERA { $$.tipo = ENTERO; $$.es_direccion = 0; printf("El valor de la constante es %d\n", $1.valor_numerico); fprintf(out, ";R104:\t<constante_entera> ::= <numero>\n");}
+constante_entera: TOK_CONSTANTE_ENTERA { $$.tipo = ENTERO; $$.es_direccion = 0; fprintf(out, ";R104:\t<constante_entera> ::= <numero>\n");}
                 ;
 
 identificador: TOK_IDENTIFICADOR {

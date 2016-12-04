@@ -298,6 +298,78 @@ void y(FILE * fpasm, int es_inmediato_1, int es_inmediato_2)
 
 	fprintf(fpasm, "and eax, ebx\n");
 	fprintf(fpasm, "push dword eax\n");
-
 }
 
+void comparacion(FILE* fpasm, int es_inmediato_1, int es_inmediato_2) {
+	fprintf(fpasm, "pop dword ebx\n");
+	if (!es_inmediato_2) {
+		fprintf(fpasm, "mov ebx, [ebx]\n");
+	}
+
+	fprintf(fpasm, "pop dword eax\n");
+	if (!es_inmediato_1) {
+		fprintf(fpasm, "mov eax, [eax]\n");
+	}
+
+	fprintf(fpasm, "cmp eax, ebx\n");
+}
+
+void distinto(FILE* fpasm, int es_inmediato_1, int es_inmediato_2, int cuantas_comparaciones) {
+	comparacion(fpasm, es_inmediato_1, es_inmediato_2);
+
+	fprintf(fpasm, "jne cmp_%d\n", cuantas_comparaciones);
+	fprintf(fpasm, "push dword 0\n");
+	fprintf(fpasm, "jmp cmp_fin_%d\n", cuantas_comparaciones);
+	fprintf(fpasm, "cmp_%d: push dword 1\n", cuantas_comparaciones);
+	fprintf(fpasm, "cmp_fin_%d:\n", cuantas_comparaciones);
+}
+
+void igual(FILE* fpasm, int es_inmediato_1, int es_inmediato_2, int cuantas_comparaciones) {
+	comparacion(fpasm, es_inmediato_1, es_inmediato_2);
+
+	fprintf(fpasm, "je cmp_%d\n", cuantas_comparaciones);
+	fprintf(fpasm, "push dword 0\n");
+	fprintf(fpasm, "jmp cmp_fin_%d\n", cuantas_comparaciones);
+	fprintf(fpasm, "cmp_%d: push dword 1\n", cuantas_comparaciones);
+	fprintf(fpasm, "cmp_fin_%d:\n", cuantas_comparaciones);
+}
+
+void menor(FILE* fpasm, int es_inmediato_1, int es_inmediato_2, int cuantas_comparaciones) {
+	comparacion(fpasm, es_inmediato_1, es_inmediato_2);
+
+	fprintf(fpasm, "jl cmp_%d\n", cuantas_comparaciones);
+	fprintf(fpasm, "push dword 0\n");
+	fprintf(fpasm, "jmp cmp_fin_%d\n", cuantas_comparaciones);
+	fprintf(fpasm, "cmp_%d: push dword 1\n", cuantas_comparaciones);
+	fprintf(fpasm, "cmp_fin_%d:\n", cuantas_comparaciones);
+}
+
+void mayor(FILE* fpasm, int es_inmediato_1, int es_inmediato_2, int cuantas_comparaciones) {
+	comparacion(fpasm, es_inmediato_1, es_inmediato_2);
+
+	fprintf(fpasm, "jg cmp_%d\n", cuantas_comparaciones);
+	fprintf(fpasm, "push dword 0\n");
+	fprintf(fpasm, "jmp cmp_fin_%d\n", cuantas_comparaciones);
+	fprintf(fpasm, "cmp_%d: push dword 1\n", cuantas_comparaciones);
+	fprintf(fpasm, "cmp_fin_%d:\n", cuantas_comparaciones);
+}
+
+void mayorigual(FILE* fpasm, int es_inmediato_1, int es_inmediato_2, int cuantas_comparaciones) {
+	comparacion(fpasm, es_inmediato_1, es_inmediato_2);
+
+	fprintf(fpasm, "jge cmp_%d\n", cuantas_comparaciones);
+	fprintf(fpasm, "push dword 0\n");
+	fprintf(fpasm, "jmp cmp_fin_%d\n", cuantas_comparaciones);
+	fprintf(fpasm, "cmp_%d: push dword 1\n", cuantas_comparaciones);
+	fprintf(fpasm, "cmp_fin_%d:\n", cuantas_comparaciones);
+}
+
+void menorigual(FILE* fpasm, int es_inmediato_1, int es_inmediato_2, int cuantas_comparaciones) {
+	comparacion(fpasm, es_inmediato_1, es_inmediato_2);
+
+	fprintf(fpasm, "jle cmp_%d\n", cuantas_comparaciones);
+	fprintf(fpasm, "push dword 0\n");
+	fprintf(fpasm, "jmp cmp_fin_%d\n", cuantas_comparaciones);
+	fprintf(fpasm, "cmp_%d: push dword 1\n", cuantas_comparaciones);
+	fprintf(fpasm, "cmp_fin_%d:\n", cuantas_comparaciones);
+}

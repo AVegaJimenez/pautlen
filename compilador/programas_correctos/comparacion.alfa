@@ -1,0 +1,7 @@
+main {
+	boolean x;
+	x = (5 == 5);
+	printf x;
+	x = (3 == 5);
+	printf x;
+}
