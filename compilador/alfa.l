@@ -94,7 +94,7 @@ error               	.
 {mayorigual}          	{yycol += yyleng; _print_token(out); return  TOK_MAYORIGUAL;}
 {menor}               	{yycol += yyleng; _print_token(out); return  TOK_MENOR;}
 {mayor}               	{yycol += yyleng; _print_token(out); return  TOK_MAYOR;}
-{constante_entera}    	{yylval.atributos.valor_numerico = atoi(yytext); yycol += yyleng; _print_token(out); return  TOK_CONSTANTE_ENTERA;}
+{constante_entera}    	{yylval.atributos.valor_numerico = atoi(yytext); strcpy(yylval.atributos.nombre, yytext); yycol += yyleng; _print_token(out); return  TOK_CONSTANTE_ENTERA;}
 {true}                	{yycol += yyleng; _print_token(out); return  TOK_TRUE;}
 {false}               	{yycol += yyleng; _print_token(out); return  TOK_FALSE;}
 {identificador}       	{strcpy(yylval.atributos.nombre, yytext); yycol += yyleng; _print_token(out); return  TOK_IDENTIFICADOR;}

@@ -8,6 +8,14 @@ extern FILE * out;
 extern long yylin;
 extern long yycol;
 extern int yymorph;
+
+TIPO tipo_actual;
+CLASE clase_actual;
+int tamano_vector_actual;
+
+INFO_SIMBOLO* read;
+
+INFO_SIMBOLO inserta;
 %}
 
 /* Palabras reservadas */
@@ -58,6 +66,11 @@ extern int yymorph;
 /* Errores */
 %token TOK_ERROR
 
+%type <atributos> constante_entera
+%type <atributos> constante_logica
+%type <atributos> constante
+%type <atributos> exp
+
 %left TOK_MAS TOK_MENOS TOK_OR
 %left TOK_ASTERISCO TOK_DIVISION TOK_AND
 %right MENOSU TOK_NOT
@@ -67,28 +80,28 @@ extern int yymorph;
 }
 %%
 
-programa: inicioTabla TOK_MAIN TOK_LLAVEIZQUIERDA declaraciones escribirTabla funciones sentencias TOK_LLAVEDERECHA {fprintf(out, ";R1:\t<programa> ::= main { <declaraciones> <funciones> <sentencias> }\n");}
+programa: TOK_MAIN TOK_LLAVEIZQUIERDA declaraciones escribirTabla funciones escribirMain sentencias TOK_LLAVEDERECHA {fprintf(out, ";R1:\t<programa> ::= main { <declaraciones> <funciones> <sentencias> }\n");}
         ;
 
 declaraciones: declaracion {fprintf(out, ";R2:\t<declaraciones> ::= <declaracion>\n");}
              | declaracion declaraciones {fprintf(out, ";R3:\t<declaraciones> ::= <declaracion> <declaraciones>\n");}
              ;
 
-declaracion: clase identificadores TOK_PUNTOYCOMA {fprintf(out, ";R4:\t<declaracion> ::= <clase> <identificadores> ;\n");}
+declaracion: clase identificadores TOK_PUNTOYCOMA {/* Llamar a la tabla de simbolos*/ fprintf(out, ";R4:\t<declaracion> ::= <clase> <identificadores> ;\n");}
            ;
 
-clase: clase_escalar {fprintf(out, ";R5:\t<clase> ::= <clase_escalar>\n");}
-     | clase_vector {fprintf(out, ";R7:\t<clase> ::= <clase_vector>\n");}
+clase: clase_escalar {fprintf(out, ";R5:\t<clase> ::= <clase_escalar>\n"); clase_actual=ESCALAR;}
+     | clase_vector {fprintf(out, ";R7:\t<clase> ::= <clase_vector>\n"); clase_actual=VECTOR;}
      ;
 
 clase_escalar: tipo {fprintf(out, ";R9:\t<clase_escalar> ::= <tipo>\n");}
              ;
 
-tipo: TOK_INT {fprintf(out, ";R10:\t<tipo> ::= int\n");}
-    | TOK_BOOLEAN {fprintf(out, ";R11:\t<tipo> ::= boolean\n");}
+tipo: TOK_INT {tipo_actual=ENTERO; fprintf(out, ";R10:\t<tipo> ::= int\n");}
+    | TOK_BOOLEAN {tipo_actual=BOOLEANO; fprintf(out, ";R11:\t<tipo> ::= boolean\n");}
     ;
 
-clase_vector: TOK_ARRAY tipo TOK_CORCHETEIZQUIERDO TOK_CONSTANTE_ENTERA TOK_CORCHETEDERECHO {fprintf(out, ";R15:\t<clase_vector> ::= array <tipo> [ <constante_entera> ]\n");}
+clase_vector: TOK_ARRAY tipo TOK_CORCHETEIZQUIERDO TOK_CONSTANTE_ENTERA TOK_CORCHETEDERECHO {tamano_vector_actual = $4.valor_numerico; fprintf(out, ";R15:\t<clase_vector> ::= array <tipo> [ <constante_entera> ]\n");}
             ;
 
 identificadores: identificador {fprintf(out, ";R18:\t<identificadores> ::= <identificador>\n");}
@@ -110,7 +123,7 @@ resto_parametros_funcion: TOK_PUNTOYCOMA parametro_funcion resto_parametros_func
                         | {fprintf(out, ";R26:\t<resto_parametros_funcion> ::=\n");}
                         ;
 
-parametro_funcion: tipo identificador {fprintf(out, ";R27:\t<parametro_funcion> ::= <tipo> <identificador>\n");}
+parametro_funcion: tipo TOK_IDENTIFICADOR {fprintf(out, ";R27:\t<parametro_funcion> ::= <tipo> <identificador>\n");}
                  ;
 
 declaraciones_funcion: declaraciones {fprintf(out, ";R28:\t<declaraciones_funcion> ::= <declaraciones>\n");}
@@ -135,7 +148,29 @@ bloque: condicional {fprintf(out, ";R40:\t<bloque> ::= <condicional>\n");}
       | bucle {fprintf(out, ";R41:\t<bloque> ::= <bucle>\n");}
       ;
 
-asignacion: TOK_IDENTIFICADOR TOK_ASIGNACION exp  {fprintf(out, ";R43:\t<asignacion> ::= <identificador> = <exp>\n");}
+asignacion: TOK_IDENTIFICADOR TOK_ASIGNACION exp  {
+    read = BuscarSimbolo($1.nombre);
+    if(read==NULL) {
+      fprintf(stderr, "Error semantico. Identificador no encontrado.\n");
+      // return -1;
+    } else {
+      if(read->categoria == FUNCION) {
+        fprintf(stderr, "Error semantico. Identificador %s no valido (funcion).\n", $1.nombre);
+        // return -1;
+      }
+      if(read->clase == VECTOR) {
+        fprintf(stderr, "Error semantico. Identificador %s no valido (vector).\n", $1.nombre);
+        // return -1;
+      }
+      if(read->tipo != $3.tipo) {
+        fprintf(stderr, "Error semantico. Tipos incompatibles.\n");
+        // return -1;
+  
+        }
+      fprintf(out, ";R43:\t<asignacion> ::= <identificador> = <exp>\n");
+    }
+  }
+
           | elemento_vector TOK_ASIGNACION exp {fprintf(out, ";R44:\t<asignacion> ::= <elemento_vector> = <exp>\n");}
           ;
 
@@ -149,10 +184,17 @@ condicional: TOK_IF TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO TOK_LLAVEI
 bucle: TOK_WHILE TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA sentencias TOK_LLAVEDERECHA {fprintf(out, ";R52:\t<bucle> ::= while ( <exp> ) { <sentencias> }\n");}
      ;
 
-lectura: TOK_SCANF TOK_IDENTIFICADOR {fprintf(out, ";R54:\t<lectura> ::= scanf <identificador>\n");}
-       ;
+lectura: TOK_SCANF TOK_IDENTIFICADOR {
+    read = BuscarSimbolo($2.nombre);
+    if(read == NULL) {
+      //ERROR
+    }
+    leer(out, $2.nombre, read->tipo); fprintf(out, ";R54:\t<lectura> ::= scanf <identificador>\n");};
 
-escritura: TOK_PRINTF exp {fprintf(out, ";R56:\t<escritura> ::= printf <exp>\n");}
+escritura: TOK_PRINTF exp {
+    escribir(out, !($2.es_direccion), ($2.tipo));
+
+    fprintf(out, ";R56:\t<escritura> ::= printf <exp>\n");}
          ;
 
 retorno_funcion: TOK_RETURN exp {fprintf(out, ";R61:\t<retorno_funcion> ::= return <exp>\n");}
@@ -166,8 +208,22 @@ exp: exp TOK_MAS exp {fprintf(out, ";R72:\t<exp> ::= <exp> + <exp>\n");}
    | exp TOK_AND exp {fprintf(out, ";R77:\t<exp> ::= <exp> && <exp>\n");}
    | exp TOK_OR exp {fprintf(out, ";R78:\t<exp> ::= <exp> || <exp>\n");}
    | TOK_NOT exp {fprintf(out, ";R79:\t<exp> ::= ! <exp>\n");}
-   | TOK_IDENTIFICADOR {fprintf(out, ";R80:\t<exp> ::= <identificador>\n");}
-   | constante {fprintf(out, ";R81:\t<exp> ::= <constante>\n");}
+   | TOK_IDENTIFICADOR {
+    strcpy($$.nombre, $1.nombre);
+    read = BuscarSimbolo($1.nombre);
+    if(read == NULL) {
+      //ERROR
+    }
+    $$.tipo = read->tipo;
+    //$$.clase = read->clase;
+    $$.es_direccion = 0;
+    escribir_operando(out, $1.nombre, 0);
+    fprintf(out, ";R80:\t<exp> ::= <identificador>\n");
+
+  }
+   | constante {
+    escribir_operando(out, $1.nombre, 1);
+    fprintf(out, ";R81:\t<exp> ::= <constante>\n");}
    | TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO {fprintf(out, ";R82:\t<exp> ::= ( <exp> )\n");}
    | TOK_PARENTESISIZQUIERDO comparacion TOK_PARENTESISDERECHO {fprintf(out, ";R83:\t<exp> ::= ( <comparacion> )\n");}
    | elemento_vector {fprintf(out, ";R85:\t<exp> ::= <elemento_vector>\n");}
@@ -190,22 +246,39 @@ comparacion: exp TOK_IGUAL exp {fprintf(out, ";R93:\t<comparacion> ::= <exp> == 
            | exp TOK_MAYOR exp {fprintf(out, ";R98:\t<comparacion> ::= <exp> > <exp>\n");}
            ;
 
-constante: constante_entera {fprintf(out, ";R99:\t<constante> ::= <constante_logica>\n");}
-         | constante_logica {fprintf(out, ";R100:\t<constante> ::= <constante_entera>\n");}
+constante: constante_entera {$$.tipo = $1.tipo; $$.es_direccion = $1.es_direccion; fprintf(out, ";R99:\t<constante> ::= <constante_logica>\n");}
+         | constante_logica {$$.tipo = $1.tipo; $$.es_direccion = $1.es_direccion; fprintf(out, ";R100:\t<constante> ::= <constante_entera>\n");}
          ;
 
-constante_logica: TOK_TRUE {fprintf(out, ";R102:\t<constante_logica> ::= true\n");}
-                | TOK_FALSE {fprintf(out, ";R103:\t<constante_logica> ::= false\n");}
+constante_logica: TOK_TRUE {$$.tipo = BOOLEANO; $$.es_direccion = 0; fprintf(out, ";R102:\t<constante_logica> ::= true\n");}
+                | TOK_FALSE {$$.tipo = BOOLEANO; $$.es_direccion = 0; fprintf(out, ";R103:\t<constante_logica> ::= false\n");}
                 ;
 
-constante_entera: TOK_CONSTANTE_ENTERA {printf("El valor de la constante es %d\n", $1.valor_numerico); fprintf(out, ";R104:\t<constante_entera> ::= <numero>\n");}
+constante_entera: TOK_CONSTANTE_ENTERA { $$.tipo = ENTERO; $$.es_direccion = 0; printf("El valor de la constante es %d\n", $1.valor_numerico); fprintf(out, ";R104:\t<constante_entera> ::= <numero>\n");}
                 ;
 
-identificador: TOK_IDENTIFICADOR {/* Introducir nombre en la tabla de simbolos */;fprintf(out, ";R108:\t<identificador> ::= TOK_IDENTIFICADOR\n");}
+identificador: TOK_IDENTIFICADOR {
+    inserta.lexema = $1.nombre;
+    inserta.categoria = VARIABLE;
+    inserta.clase = clase_actual;
+    inserta.tipo = tipo_actual;
+    if(clase_actual == VECTOR) {
+      inserta.adicional1 = tamano_vector_actual;
+
+    } else {
+      /* valor actual */
+    }
+
+    Declarar($1.nombre, &inserta);
+    declarar_variable(out, $1.nombre, tipo_actual,  1);
+
+    fprintf(out, ";R108:\t<identificador> ::= TOK_IDENTIFICADOR\n");}
              ;
 
-inicioTabla: { /* Inicializar tabla de simbolos */ }
-escribirTabla: { /* Escribir tabla de simbolos a nasm */}
+ 
+escribirTabla: { /* Escribir tabla de simbolos a nasm */ escribir_segmento_codigo(out); }
+
+escribirMain: { escribir_inicio_main(out);}
 %%
 
 void yyerror(const char * s) {

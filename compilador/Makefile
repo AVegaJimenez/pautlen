@@ -11,7 +11,7 @@ BISONFLAGS = -dyv
 ZIPNAME = Fuentes_Perdices_5_compilador.zip
 ZIPFILES = *.l *.y *.c *.h Makefile
 
-OBJ = tablaSimbolos.o tablaHash.o
+OBJ = tablaSimbolos.o tablaHash.o generacion.o
 
 all: ${BIN}
 
@@ -37,7 +37,7 @@ lex.yy.c: alfa.l y.tab.h
 	$(FLEX) $(FLEXFLAGS) alfa.l
 
 clean:
-	rm -rvf $(ZIPNAME) $(BIN) *.o lex.yy.c y.tab.h y.tab.c y.output
+	rm -rvf $(ZIPNAME) $(BIN) $(OBJ) lex.yy.c lex.yy.o y.tab.h y.tab.c y.tab.o y.output
 
 zip: clean
 	zip $(ZIPNAME) $(ZIPFILES)
