@@ -5,7 +5,7 @@ ASM=nasm
 ALFA=./alfa
 
 BIN = compilador
-#CFLAGS = -Wall -ansi -pedantic
+CFLAGS = -Wall -ansi -pedantic
 #CYYFLAGS = -ansi -pedantic
 
 FLEXFLAGS =
