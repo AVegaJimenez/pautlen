@@ -397,7 +397,7 @@ void etiqueta_final_condicional_compuesto(FILE* fpasm, int cuantos_condicionales
 }
 
 void etiqueta_inicio_while(FILE* fpasm, int cuantos_bucles) {
-	fprintf(fpasm, "__inicio_bucle_%d\n", cuantos_bucles);
+	fprintf(fpasm, "__inicio_bucle_%d:\n", cuantos_bucles);
 }
 
 void inicio_bucle(FILE* fpasm, int es_inmediato, int cuantos_bucles) {
