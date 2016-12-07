@@ -1,0 +1,7 @@
+main {
+    int entrada;
+    entrada=1;
+    printf 1/0;
+
+}
+

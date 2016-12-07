@@ -1,0 +1,16 @@
+main {
+    int entrada;
+    array int[2] v;
+
+
+    scanf entrada;
+
+
+    v[0] = 10;
+    v[1] = 20;
+    printf v[0];
+    printf v[1];
+    v[3] = 1;
+
+
+}

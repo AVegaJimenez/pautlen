@@ -1,0 +1,24 @@
+main {
+	int entrada;
+	array int[2] v;
+	int a;
+
+	scanf entrada;
+
+	printf a;
+	v[0] = 10;
+	v[1] = 20;
+	printf v[0];
+	 printf v[1];
+	if (
+			(v[0] < entrada*v[1])
+	   )
+	{
+		printf 1;
+	} else {
+		printf false;
+	}
+
+
+
+}

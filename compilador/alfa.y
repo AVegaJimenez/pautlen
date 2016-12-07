@@ -22,6 +22,8 @@ int cuantos_no=0;
 int cuantas_comparaciones=0;
 int cuantos_condicionales=0;
 int cuantos_bucles=0;
+int pos_variable_local_actual=0;
+int num_variables_locales_actual=0;
 %}
 
 /* Palabras reservadas */
@@ -83,6 +85,8 @@ int cuantos_bucles=0;
 %type <atributos> while
 %type <atributos> while_exp
 
+%type <atributos> elemento_vector
+
 %left TOK_MAS TOK_MENOS TOK_OR
 %left TOK_ASTERISCO TOK_DIVISION TOK_AND
 %right MENOSU TOK_NOT
@@ -113,7 +117,14 @@ tipo: TOK_INT {tipo_actual=ENTERO; fprintf(out, ";R10:\t<tipo> ::= int\n");}
     | TOK_BOOLEAN {tipo_actual=BOOLEANO; fprintf(out, ";R11:\t<tipo> ::= boolean\n");}
     ;
 
-clase_vector: TOK_ARRAY tipo TOK_CORCHETEIZQUIERDO TOK_CONSTANTE_ENTERA TOK_CORCHETEDERECHO {tamano_vector_actual = $4.valor_numerico; fprintf(out, ";R15:\t<clase_vector> ::= array <tipo> [ <constante_entera> ]\n");}
+clase_vector: TOK_ARRAY tipo TOK_CORCHETEIZQUIERDO TOK_CONSTANTE_ENTERA TOK_CORCHETEDERECHO {
+  tamano_vector_actual = $4.valor_numerico; 
+  if(tamano_vector_actual<1 || tamano_vector_actual > MAX_TAMANIO_VECTOR) {
+    printf("****Error semantico en lin %ld: El tamanyo del vector <nombre_vector> excede los limites permitidos (1,64).\n", yylin);
+    return -1;
+  }
+  fprintf(out, ";R15:\t<clase_vector> ::= array <tipo> [ <constante_entera> ]\n");
+}
             ;
 
 identificadores: identificador {fprintf(out, ";R18:\t<identificadores> ::= <identificador>\n");}
@@ -163,20 +174,20 @@ bloque: condicional {fprintf(out, ";R40:\t<bloque> ::= <condicional>\n");}
 asignacion: TOK_IDENTIFICADOR TOK_ASIGNACION exp  {
     read = BuscarSimbolo($1.nombre);
     if(read==NULL) {
-      fprintf(stderr, "Error semantico. Identificador no encontrado.\n");
-      // return -1;
+      fprintf(ERR_OUT, "****Error semantico en lin %ld: Acceso a variable no declarada (%s).\n", yylin, $1.nombre);
+      return -1;
     } else {
       if(read->categoria == FUNCION) {
-        fprintf(stderr, "Error semantico. Identificador %s no valido (funcion).\n", $1.nombre);
-        // return -1;
+        fprintf(ERR_OUT, "****Error semantico en lin %ld: Asignacion incompatible.\n", yylin);
+        return -1;
       }
       if(read->clase == VECTOR) {
-        fprintf(stderr, "Error semantico. Identificador %s no valido (vector).\n", $1.nombre);
-        // return -1;
+        fprintf(ERR_OUT, "****Error semantico en lin %ld: Asignacion incompatible.\n", yylin);
+        return -1;
       }
       if(read->tipo != $3.tipo) {
-        fprintf(stderr, "Error semantico. Tipos incompatibles.\n");
-        // return -1;
+        fprintf(ERR_OUT, "****Error semantico en lin %ld: Asignacion incompatible.\n", yylin);
+        return -1;
   
         }
         asignar(out, $1.nombre, $3.es_direccion?0:1);
@@ -184,10 +195,33 @@ asignacion: TOK_IDENTIFICADOR TOK_ASIGNACION exp  {
     }
   }
 
-          | elemento_vector TOK_ASIGNACION exp {fprintf(out, ";R44:\t<asignacion> ::= <elemento_vector> = <exp>\n");}
+          | elemento_vector TOK_ASIGNACION exp {
+            if($1.tipo != $3.tipo) {
+              fprintf(ERR_OUT, "****Error semantico en lin %ld: Asignacion incompatible.\n", yylin);
+              return -1;
+            }
+            asignar_vector(out, $3.es_direccion?0:1);
+            fprintf(out, ";R44:\t<asignacion> ::= <elemento_vector> = <exp>\n");}
           ;
 
-elemento_vector: TOK_IDENTIFICADOR TOK_CORCHETEIZQUIERDO exp TOK_CORCHETEDERECHO {fprintf(out, ";R48:\t<elemento_vector> ::= <identificador> [ <exp> ]\n");}
+elemento_vector: TOK_IDENTIFICADOR TOK_CORCHETEIZQUIERDO exp TOK_CORCHETEDERECHO {
+  read = BuscarSimbolo($1.nombre);
+  if(read == NULL) {
+    fprintf(ERR_OUT, "****Error semantico en lin %ld: Acceso a variable no declarada (%s).\n", yylin, $1.nombre);
+    return -1;
+  }  
+  if(read->categoria == FUNCION) { //REVISAR
+    fprintf(stderr,"Identificador no valido\n");  
+  }  
+  if(read->clase == ESCALAR) {
+    fprintf(ERR_OUT, "****Error semantico en lin %ld: Intento de indexacion de una variable que no es de tipo vector.\n", yylin);
+    return -1;
+  }
+  $$.tipo = read->tipo;  
+  $$.es_direccion = 1;
+  escribir_operando_array(out, $1.nombre, $3.es_direccion?0:1, read->adicional1);
+
+  fprintf(out, ";R48:\t<elemento_vector> ::= <identificador> [ <exp> ]\n");}
                ;
 
 condicional: if_exp_sentencias TOK_LLAVEDERECHA {
@@ -201,7 +235,8 @@ condicional: if_exp_sentencias TOK_LLAVEDERECHA {
 
 if_exp: TOK_IF TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA {
     if($3.tipo != BOOLEANO) {
-      //error
+      fprintf(ERR_OUT, "****Error semantico en lin %ld: Condicional con condicion de tipo int.\n", yylin);
+      return -1;
     }
     $$.etiqueta = cuantos_condicionales++;
     inicio_condicional(out, $3.es_direccion?0:1, $$.etiqueta);
@@ -226,7 +261,8 @@ while: TOK_WHILE TOK_PARENTESISIZQUIERDO {
 
 while_exp: while exp TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA {
   if($2.tipo != BOOLEANO) {
-    //ERROR
+    fprintf(ERR_OUT, "****Error semantico en lin %ld: Bucle con condicion de tipo int.\n", yylin);
+    return -1;
   }
 
   $$.etiqueta = $1.etiqueta;
@@ -236,7 +272,8 @@ while_exp: while exp TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA {
 lectura: TOK_SCANF TOK_IDENTIFICADOR {
     read = BuscarSimbolo($2.nombre);
     if(read == NULL) {
-      //ERROR
+      fprintf(ERR_OUT, "****Error semantico en lin %ld: Acceso a variable no declarada (%s).\n", yylin, $2.nombre);
+      return -1;
     }
     leer(out, $2.nombre, read->tipo); 
     fprintf(out, ";R54:\t<lectura> ::= scanf <identificador>\n");
@@ -253,7 +290,8 @@ retorno_funcion: TOK_RETURN exp {fprintf(out, ";R61:\t<retorno_funcion> ::= retu
 
 exp: exp TOK_MAS exp {
   if($1.tipo!=ENTERO || $3.tipo != ENTERO) {
-    //ERROR
+    fprintf(ERR_OUT, "****Error semantico en lin %ld: Operacion aritmetica con operandos boolean.\n", yylin);
+    return -1;
   }
   sumar(out, $1.es_direccion?0:1, $3.es_direccion?0:1);
   $$.es_direccion = 0;
@@ -264,7 +302,8 @@ exp: exp TOK_MAS exp {
 
    | exp TOK_MENOS exp {
   if($1.tipo!=ENTERO || $3.tipo != ENTERO) {
-    //ERROR
+    fprintf(ERR_OUT, "****Error semantico en lin %ld: Operacion aritmetica con operandos boolean.\n", yylin);
+    return -1;
   }
   $$.tipo = ENTERO;
   restar(out, $1.es_direccion?0:1, $3.es_direccion?0:1);
@@ -275,6 +314,8 @@ exp: exp TOK_MAS exp {
    | exp TOK_DIVISION exp {
   if($1.tipo!=ENTERO || $3.tipo != ENTERO) {
     //ERROR
+    fprintf(ERR_OUT, "****Error semantico en lin %ld: Operacion aritmetica con operandos boolean.\n", yylin);
+    return -1;
   }
   $$.tipo = ENTERO;
   dividir(out, $1.es_direccion?0:1, $3.es_direccion?0:1);
@@ -284,7 +325,8 @@ exp: exp TOK_MAS exp {
 
    | exp TOK_ASTERISCO exp {
   if($1.tipo!=ENTERO || $3.tipo != ENTERO) {
-    //ERROR
+    fprintf(ERR_OUT, "****Error semantico en lin %ld: Operacion aritmetica con operandos boolean.\n", yylin);
+    return -1;
   }
   $$.tipo = ENTERO;
   multiplicar(out, $1.es_direccion?0:1, $3.es_direccion?0:1);
@@ -294,7 +336,8 @@ exp: exp TOK_MAS exp {
 
    | TOK_MENOS exp %prec MENOSU {
     if($2.tipo!=ENTERO) {
-    //ERROR
+      fprintf(ERR_OUT, "****Error semantico en lin %ld: Operacion aritmetica con operandos boolean.\n", yylin);
+      return -1; 
     }
     $$.tipo = ENTERO;
     cambiar_signo(out, $2.es_direccion?0:1);
@@ -303,7 +346,8 @@ exp: exp TOK_MAS exp {
 }
    | exp TOK_AND exp {
     if($1.tipo!=BOOLEANO || $3.tipo != BOOLEANO) {
-    //ERROR
+      fprintf(ERR_OUT, "****Error semantico en lin %ld: Operacion logica con operandos int.\n", yylin);
+      return -1;
     }
     $$.tipo = BOOLEANO;
     y(out, $1.es_direccion?0:1, $3.es_direccion?0:1);
@@ -312,7 +356,8 @@ exp: exp TOK_MAS exp {
 }
    | exp TOK_OR exp {
     if($1.tipo!=BOOLEANO || $3.tipo != BOOLEANO) {
-    //ERROR
+      fprintf(ERR_OUT, "****Error semantico en lin %ld: Operacion logica con operandos int.\n", yylin);
+      return -1;
     }
     $$.tipo = BOOLEANO;
     o(out, $1.es_direccion?0:1, $3.es_direccion?0:1);
@@ -322,7 +367,8 @@ exp: exp TOK_MAS exp {
   }
    | TOK_NOT exp {
     if($2.tipo!=BOOLEANO) {
-    //ERROR
+      fprintf(ERR_OUT, "****Error semantico en lin %ld: Operacion logica con operandos int.\n", yylin);
+      return -1;
     }
     $$.tipo = BOOLEANO;
     no(out, $2.es_direccion?0:1, cuantos_no++);
@@ -333,7 +379,8 @@ exp: exp TOK_MAS exp {
     strcpy($$.nombre, $1.nombre);
     read = BuscarSimbolo($1.nombre);
     if(read == NULL) {
-      //ERROR
+      fprintf(ERR_OUT, "****Error semantico en lin %ld: Acceso a variable no declarada (%s).\n", yylin, $1.nombre);
+      return -1;
     }
 
     if(read->categoria==FUNCION) {
@@ -363,7 +410,10 @@ exp: exp TOK_MAS exp {
     fprintf(out, ";R82:\t<exp> ::= ( <exp> )\n");
     fprintf(out, ";R83:\t<exp> ::= ( <comparacion> )\n");
   }
-   | elemento_vector {fprintf(out, ";R85:\t<exp> ::= <elemento_vector>\n");}
+   | elemento_vector {
+    fprintf(out, ";R85:\t<exp> ::= <elemento_vector>\n");
+
+  }
    | TOK_IDENTIFICADOR TOK_PARENTESISIZQUIERDO lista_expresiones TOK_PARENTESISDERECHO {fprintf(out, ";R88:\t<exp> ::= <identificador> ( <lista_expresiones> )\n");}
    ;
 
@@ -431,11 +481,12 @@ identificador: TOK_IDENTIFICADOR {
       inserta.adicional1 = tamano_vector_actual;
 
     } else {
-      /* valor actual */
+      inserta.adicional1 = 1;
     }
 
+
     Declarar($1.nombre, &inserta);
-    declarar_variable(out, $1.nombre, tipo_actual,  1);
+    declarar_variable(out, $1.nombre, tipo_actual,  inserta.adicional1);
 
     fprintf(out, ";R108:\t<identificador> ::= TOK_IDENTIFICADOR\n");}
              ;

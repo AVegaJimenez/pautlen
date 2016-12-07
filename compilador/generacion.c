@@ -17,8 +17,8 @@ void escribir_cabecera_compatibilidad(FILE* fpasm)
 void escribir_subseccion_data(FILE* fpasm)
 {
 	fprintf(fpasm, "segment .data\n");
-	fprintf(fpasm, "__index_out_of_bounds db \"Index out of bounds\\n\", 10, 0\n");
-	fprintf(fpasm, "__division_by_zero db \"Division by zero\", 10, 0\n");
+	fprintf(fpasm, "__index_out_of_bounds db \"****Error de ejecucion: Indice fuera de rango.\", 10, 0\n");
+	fprintf(fpasm, "__division_by_zero db \"****Error de ejecucion: Division por cero.\", 10, 0\n");
 
 }
 
@@ -85,6 +85,11 @@ void escribir_fin(FILE* fpasm)
 	fprintf(fpasm, "jmp near _fin\n");
 	fprintf(fpasm, "_error_division_zero:\n");
 	fprintf(fpasm, "push dword __division_by_zero\n");
+	fprintf(fpasm, "call print_string\n");
+	fprintf(fpasm, "add esp, 4\n");
+	fprintf(fpasm, "jmp near _fin\n");
+	fprintf(fpasm, "_error_index_out_of_bounds:\n");
+	fprintf(fpasm, "push dword __index_out_of_bounds\n");
 	fprintf(fpasm, "call print_string\n");
 	fprintf(fpasm, "add esp, 4\n");
 	fprintf(fpasm, "_fin: mov dword esp, [__esp]\n");
@@ -412,4 +417,48 @@ void inicio_bucle(FILE* fpasm, int es_inmediato, int cuantos_bucles) {
 void etiqueta_final_while(FILE* fpasm, int cuantos_bucles) {
 	fprintf(fpasm, "jmp near __inicio_bucle_%d\n", cuantos_bucles);
 	fprintf(fpasm, "__final_bucle_%d:\n", cuantos_bucles);
+}
+
+void escribir_operando_array(FILE* fpasm, char* operando, int es_inmediato, int tamano) {
+	fprintf(fpasm, "pop dword eax\n");
+	if (!es_inmediato) {
+		fprintf(fpasm, "mov eax, [eax]\n");
+	}
+	fprintf(fpasm, "cmp eax, 0\n");
+	fprintf(fpasm, "jl near _error_index_out_of_bounds\n");
+	fprintf(fpasm, "cmp eax, %d\n", tamano);
+	fprintf(fpasm, "jg near _error_index_out_of_bounds\n");
+
+	fprintf(fpasm, "mov dword edx, _%s\n", operando);
+	fprintf(fpasm, "lea eax, [edx + eax*4]\n");
+	fprintf(fpasm, "push dword eax\n");
+
+}
+
+void asignar_vector(FILE* fpasm, int es_inmediato) {
+	fprintf(fpasm, "pop dword eax\n");
+	if (!es_inmediato) {
+		fprintf(fpasm, "mov eax, [eax]\n");
+	}
+
+	fprintf(fpasm, "pop dword edx\n");
+
+	fprintf(fpasm, "mov [edx], eax\n");
+}
+
+void declarar_funcion(FILE* fpasm, char* nombre, int n_locales) {
+	fprintf(fpasm, "push ebp\n");
+	fprintf(fpasm, "mov ebp, esp\n");
+	fprintf(fpasm, "sub esp, %d\n", 4*n_locales);
+}
+
+void final_funcion(FILE* fpasm) {
+	fprintf(fpasm, "mov esp, ebp\n");
+	fprintf(fpasm, "pop ebp\n");
+}
+
+void llamar_funcion(FILE* fpasm, char* nombre, int n_param) {
+	fprintf(fpasm, "call _%s\n", nombre);
+	fprintf(fpasm, "add esp, %d\n", 4*n_param);
+	fprintf(fpasm, "push dword eax\n");
 }
