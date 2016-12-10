@@ -447,6 +447,7 @@ void asignar_vector(FILE* fpasm, int es_inmediato) {
 }
 
 void declarar_funcion(FILE* fpasm, char* nombre, int n_locales) {
+	fprintf(fpasm, "_%s:\n", nombre);
 	fprintf(fpasm, "push ebp\n");
 	fprintf(fpasm, "mov ebp, esp\n");
 	fprintf(fpasm, "sub esp, %d\n", 4*n_locales);

@@ -5,8 +5,8 @@ ASM=nasm
 ALFA=./alfa
 
 BIN = compilador
-CFLAGS = -Wall -ansi -pedantic
-#CYYFLAGS = -ansi -pedantic
+CFLAGS = -Wall 
+CYYFLAGS = 
 
 FLEXFLAGS =
 
@@ -16,7 +16,7 @@ ASMFLAGS=-g -f elf32
 NASM_LDFLAGS=-m32
 
 ZIPNAME = Fuentes_Perdices_5_compilador.zip
-ZIPFILES = *.l *.y *.c *.h Makefile programas_correctos/*
+ZIPFILES = *.l *.y *.c *.h Makefile programas_correctos/* alfalib.o
 
 OBJ = tablaSimbolos.o tablaHash.o generacion.o
 

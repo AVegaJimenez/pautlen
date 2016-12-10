@@ -120,7 +120,7 @@ tipo: TOK_INT {tipo_actual=ENTERO; fprintf(out, ";R10:\t<tipo> ::= int\n");}
 clase_vector: TOK_ARRAY tipo TOK_CORCHETEIZQUIERDO TOK_CONSTANTE_ENTERA TOK_CORCHETEDERECHO {
   tamano_vector_actual = $4.valor_numerico; 
   if(tamano_vector_actual<1 || tamano_vector_actual > MAX_TAMANIO_VECTOR) {
-    printf("****Error semantico en lin %ld: El tamanyo del vector <nombre_vector> excede los limites permitidos (1,64).\n", yylin);
+    fprintf(ERR_OUT, "****Error semantico en lin %ld: El tamanyo del vector <nombre_vector> excede los limites permitidos (1,64).\n", yylin);
     return -1;
   }
   fprintf(out, ";R15:\t<clase_vector> ::= array <tipo> [ <constante_entera> ]\n");
@@ -135,7 +135,8 @@ funciones: funcion funciones {fprintf(out, ";R20:\t<funciones> ::= <funcion> <fu
          | {fprintf(out, ";R21:\t<funciones> ::=\n");}
          ;
 
-funcion: TOK_FUNCTION tipo identificador TOK_PARENTESISIZQUIERDO parametros_funcion TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA declaraciones_funcion sentencias TOK_LLAVEDERECHA {fprintf(out, ";R22:\t<funcion> ::=function <tipo> <identificador> ( <parametros_funcion> ) { <declaraciones_funcion> <sentencias> }\n");}
+funcion: TOK_FUNCTION tipo identificador TOK_PARENTESISIZQUIERDO parametros_funcion TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA declaraciones_funcion sentencias TOK_LLAVEDERECHA {
+  fprintf(out, ";R22:\t<funcion> ::=function <tipo> <identificador> ( <parametros_funcion> ) { <declaraciones_funcion> <sentencias> }\n");}
        ;
 
 parametros_funcion: parametro_funcion resto_parametros_funcion {fprintf(out, ";R23:\t<parametros_funcion> ::= <parametro_funcion> <resto_parametros_funcion>\n");}
@@ -210,7 +211,7 @@ elemento_vector: TOK_IDENTIFICADOR TOK_CORCHETEIZQUIERDO exp TOK_CORCHETEDERECHO
     fprintf(ERR_OUT, "****Error semantico en lin %ld: Acceso a variable no declarada (%s).\n", yylin, $1.nombre);
     return -1;
   }  
-  if(read->categoria == FUNCION) { //REVISAR
+  if(read->categoria == FUNCION) { /***REVISAR*/
     fprintf(stderr,"Identificador no valido\n");  
   }  
   if(read->clase == ESCALAR) {
@@ -219,6 +220,10 @@ elemento_vector: TOK_IDENTIFICADOR TOK_CORCHETEIZQUIERDO exp TOK_CORCHETEDERECHO
   }
   $$.tipo = read->tipo;  
   $$.es_direccion = 1;
+  if($3.tipo != ENTERO) {
+    fprintf(ERR_OUT, "****Error semantico en lin %ld: El indice en una operacion de indexacion tiene que ser de tipo entero.\n", yylin);
+    return -1;
+  }
   escribir_operando_array(out, $1.nombre, $3.es_direccion?0:1, read->adicional1);
 
   fprintf(out, ";R48:\t<elemento_vector> ::= <identificador> [ <exp> ]\n");}
@@ -313,7 +318,7 @@ exp: exp TOK_MAS exp {
 
    | exp TOK_DIVISION exp {
   if($1.tipo!=ENTERO || $3.tipo != ENTERO) {
-    //ERROR
+    /** ERROR **/
     fprintf(ERR_OUT, "****Error semantico en lin %ld: Operacion aritmetica con operandos boolean.\n", yylin);
     return -1;
   }
@@ -426,36 +431,48 @@ resto_lista_expresiones: TOK_COMA exp resto_lista_expresiones {fprintf(out, ";R9
                        ;
 
 comparacion: exp TOK_IGUAL exp {
+  if($1.tipo != ENTERO || $3.tipo != ENTERO) {
+    fprintf(ERR_OUT, "****Error semantico en lin %ld: Comparacion con operandos boolean.\n", yylin);
+    return -1;
+  }
   igual(out, $1.es_direccion?0:1, $3.es_direccion?0:1, cuantas_comparaciones++);
-  //$$.tipo = BOOLEANO;
-  //$$.es_direccion = 0;
+  /*$$.tipo = BOOLEANO;
+  $$.es_direccion = 0;*/
   fprintf(out, ";R93:\t<comparacion> ::= <exp> == <exp>\n");
 }
            | exp TOK_DISTINTO exp {
+            if($1.tipo != ENTERO || $3.tipo != ENTERO) {
+              fprintf(ERR_OUT, "****Error semantico en lin %ld: Comparacion con operandos boolean.\n", yylin);
+              return -1;
+            }
             distinto(out, $1.es_direccion?0:1, $3.es_direccion?0:1, cuantas_comparaciones++); 
             fprintf(out, ";R94:\t<comparacion> ::= <exp> != <exp>\n");
             }
            | exp TOK_MENORIGUAL exp {
             if($1.tipo != ENTERO || $3.tipo != ENTERO) {
-              //ERROR
+              fprintf(ERR_OUT, "****Error semantico en lin %ld: Comparacion con operandos boolean.\n", yylin);
+              return -1;
             }
             menorigual(out, $1.es_direccion?0:1, $3.es_direccion?0:1, cuantas_comparaciones++);
             fprintf(out, ";R95:\t<comparacion> ::= <exp> <= <exp>\n");}
            | exp TOK_MAYORIGUAL exp {
             if($1.tipo != ENTERO || $3.tipo != ENTERO) {
-              //ERROR
+              fprintf(ERR_OUT, "****Error semantico en lin %ld: Comparacion con operandos boolean.\n", yylin);
+              return -1;
             }
             mayorigual(out, $1.es_direccion?0:1, $3.es_direccion?0:1, cuantas_comparaciones++);
             fprintf(out, ";R96:\t<comparacion> ::= <exp> >= <exp>\n");}
            | exp TOK_MENOR exp {
             if($1.tipo != ENTERO || $3.tipo != ENTERO) {
-              //ERROR
+              fprintf(ERR_OUT, "****Error semantico en lin %ld: Comparacion con operandos boolean.\n", yylin);
+              return -1;
             }
             menor(out, $1.es_direccion?0:1, $3.es_direccion?0:1, cuantas_comparaciones++);
             fprintf(out, ";R97:\t<comparacion> ::= <exp> < <exp>\n");}
            | exp TOK_MAYOR exp {
             if($1.tipo != ENTERO || $3.tipo != ENTERO) {
-              //ERROR
+              fprintf(ERR_OUT, "****Error semantico en lin %ld: Comparacion con operandos boolean.\n", yylin);
+              return -1;
             }
             mayor(out, $1.es_direccion?0:1, $3.es_direccion?0:1, cuantas_comparaciones++);
             fprintf(out, ";R98:\t<comparacion> ::= <exp> > <exp>\n");}
@@ -473,6 +490,10 @@ constante_entera: TOK_CONSTANTE_ENTERA { $$.tipo = ENTERO; $$.es_direccion = 0; 
                 ;
 
 identificador: TOK_IDENTIFICADOR {
+    read = BuscarSimbolo($1.nombre);
+    if(read != NULL) {
+      fprintf(ERR_OUT, "****Error semantico en lin %ld: Declaracion duplicada.\n", yylin);
+    }
     inserta.lexema = $1.nombre;
     inserta.categoria = VARIABLE;
     inserta.clase = clase_actual;

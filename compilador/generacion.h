@@ -72,6 +72,15 @@ void inicio_bucle(FILE* fpasm, int es_inmediato, int cuantos_bucles);
 
 void etiqueta_final_while(FILE* fpasm, int cuantos_bucles);
 
+void asignar_vector(FILE* fpasm, int es_inmediato);
+
+void escribir_operando_array(FILE* fpasm, char* operando, int es_inmediato, int tamano);
+
+void declarar_funcion(FILE* fpasm, char* nombre, int n_locales);
+
+void final_funcion(FILE* fpasm);
+
+void llamar_funcion(FILE* fpasm, char* nombre, int n_param);
 #endif
 
 
