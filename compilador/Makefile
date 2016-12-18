@@ -13,7 +13,7 @@ FLEXFLAGS =
 BISONFLAGS = -dyv
 
 ASMFLAGS=-g -f elf32
-NASM_LDFLAGS=-m32
+NASM_LDFLAGS=-m32 -g
 
 ZIPNAME = Fuentes_Perdices_5_compilador.zip
 ZIPFILES = *.l *.y *.c *.h Makefile programas_correctos/* alfalib.o

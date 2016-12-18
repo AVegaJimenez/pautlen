@@ -263,7 +263,7 @@ asignacion: TOK_IDENTIFICADOR TOK_ASIGNACION exp  {
           // REVISAR
           asignar_local(out, (num_parametros_actual-read->adicional1+1), $3.es_direccion?0:1);
         } else {
-          asignar_local(out, read->adicional1+3, $3.es_direccion?0:1);
+          asignar_local(out, -(read->adicional1+1), $3.es_direccion?0:1);
         }
 
       } else {
@@ -473,7 +473,7 @@ exp: exp TOK_MAS exp {
         printf("%d %d\n", num_parametros_actual, read->adicional1);
         escribir_operando_funcion(out, (num_parametros_actual-read->adicional1)+1);
       } else {
-        escribir_operando_funcion(out, read->adicional1+3);
+        escribir_operando_funcion(out, -(read->adicional1+1));
       }
 
     } else {
