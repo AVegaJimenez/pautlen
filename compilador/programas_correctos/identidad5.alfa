@@ -1,0 +1,16 @@
+main { 
+	int z;
+ 	function int id(int arg)
+ 		{
+ 		 int a, b;
+ 		 a = 3;
+ 		 b = 5;
+ 		 printf a;
+ 		 printf b;
+ 		 printf arg;
+ 		 printf z;
+		 return a; 
+		}
+	z = 7;
+ 	printf id(2);
+}
