@@ -1,0 +1,35 @@
+main { 
+	int z;
+ 	function int id(int arg; int arg2; int arg3)
+ 		{
+ 		 int a, b;
+ 		 a = 3;
+ 		 b = 5;
+ 		 printf a;
+ 		 printf b;
+ 		 printf arg;
+ 		 printf arg2;
+ 		 printf arg3;
+ 		 printf z;
+ 		 arg = 9;
+		 return arg2; 
+		}
+	function int id2(int arg)
+ 		{
+ 		 int a, b;
+ 		 a = 3;
+ 		 b = 5;
+ 		 printf a;
+ 		 printf b;
+ 		 //a = a + b;
+ 		 printf a;
+		 return arg; 
+		}
+	z = -7;
+ 	printf id2(z);
+
+ 	scanf z;
+ 	printf id2(z);
+ 	printf id(2, 4, 6);
+ 	//printf id2(z);
+}

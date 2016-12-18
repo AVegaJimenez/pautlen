@@ -1,0 +1,18 @@
+main { 
+	int z;
+ 	function int id(int arg; int arg2)
+ 		{
+ 		 int a, b;
+ 		 a = 3;
+ 		 b = 5;
+ 		 printf a;
+ 		 printf b;
+ 		 printf arg;
+ 		 printf arg2;
+ 		 printf z;
+ 		 arg = 9;
+		 return arg2; 
+		}
+	z = 7;
+ 	printf id(2, 4);
+}

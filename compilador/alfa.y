@@ -94,6 +94,8 @@ int es_llamada=0;
 %type <atributos> fn_name
 %type <atributos> fn_declaration
 
+%type <atributos> call_func
+
 %left TOK_MAS TOK_MENOS TOK_OR
 %left TOK_ASTERISCO TOK_DIVISION TOK_AND
 %right MENOSU TOK_NOT
@@ -511,9 +513,10 @@ exp: exp TOK_MAS exp {
     fprintf(out, ";R85:\t<exp> ::= <elemento_vector>\n");
 
   }
-   | TOK_IDENTIFICADOR TOK_PARENTESISIZQUIERDO lista_expresiones TOK_PARENTESISDERECHO {
+   |  call_func lista_expresiones TOK_PARENTESISDERECHO {
     if(es_llamada) {
       // ERROR
+      fprintf(ERR_OUT, "Error doble llamada");
       return -1;
     }
     // Comprobar funcion declarada
@@ -522,17 +525,31 @@ exp: exp TOK_MAS exp {
       fprintf(ERR_OUT, "****Error semantico en lin %ld: Acceso a variable no declarada (%s).\n", yylin, $1.nombre);
       return -1;
     }
-    es_llamada = 1;
+    es_llamada = 0;
     llamar_funcion(out, $1.nombre, read->adicional1);
 
     fprintf(out, ";R88:\t<exp> ::= <identificador> ( <lista_expresiones> )\n");}
    ;
 
-lista_expresiones: exp resto_lista_expresiones {fprintf(out, ";R89:\t<lista_expresiones> ::= <exp> <resto_lista_expresiones>\n");}
+call_func: TOK_IDENTIFICADOR TOK_PARENTESISIZQUIERDO {
+  es_llamada = 1;
+
+  strcpy($$.nombre, $1.nombre);
+}
+lista_expresiones: exp resto_lista_expresiones {
+  es_llamada = 0;
+  if($1.es_direccion) {
+    cambiar_a_valor(out);
+  }
+  fprintf(out, ";R89:\t<lista_expresiones> ::= <exp> <resto_lista_expresiones>\n");}
                  |   {fprintf(out, ";R90:\t<lista_expresiones> ::=\n");}
                  ;
 
-resto_lista_expresiones: TOK_COMA exp resto_lista_expresiones {fprintf(out, ";R91:\t<resto_lista_expresiones> ::= , <exp> <resto_lista_expresiones>\n");}
+resto_lista_expresiones: TOK_COMA exp resto_lista_expresiones {
+  if($2.es_direccion) {
+    cambiar_a_valor(out);
+  }
+  fprintf(out, ";R91:\t<resto_lista_expresiones> ::= , <exp> <resto_lista_expresiones>\n");}
                        |   {fprintf(out, ";R92:\t<resto_lista_expresiones> ::=\n");}
                        ;
 

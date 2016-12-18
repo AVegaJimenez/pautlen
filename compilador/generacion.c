@@ -481,3 +481,8 @@ void asignar_local(FILE * fpasm, int n_local, int es_inmediato)
 	fprintf(fpasm, "mov dword [ebp+%d], %s\n", n_local*4, es_inmediato? "eax" : "[eax]");
 
 }
+
+void cambiar_a_valor(FILE* fpasm) {
+	fprintf(fpasm, "pop dword eax\n");
+	fprintf(fpasm, "push dword [eax]\n");
+}
