@@ -453,13 +453,31 @@ void declarar_funcion(FILE* fpasm, char* nombre, int n_locales) {
 	fprintf(fpasm, "sub esp, %d\n", 4*n_locales);
 }
 
-void final_funcion(FILE* fpasm) {
-	fprintf(fpasm, "mov esp, ebp\n");
-	fprintf(fpasm, "pop ebp\n");
-}
-
 void llamar_funcion(FILE* fpasm, char* nombre, int n_param) {
 	fprintf(fpasm, "call _%s\n", nombre);
 	fprintf(fpasm, "add esp, %d\n", 4*n_param);
 	fprintf(fpasm, "push dword eax\n");
+}
+
+void escribir_operando_funcion(FILE* fpasm, int n_parametro) {
+	fprintf(fpasm, "mov dword eax, ebp\n");
+	fprintf(fpasm, "add eax, %d\n", 4*n_parametro);
+	fprintf(fpasm, "push dword eax\n");
+}
+
+void retorno_funcion(FILE* fpasm, int es_inmediato) {
+	fprintf(fpasm, "pop dword eax\n");
+	if (!es_inmediato) {
+		fprintf(fpasm, "mov eax, [eax]\n");
+	}
+	fprintf(fpasm, "mov esp, ebp\n");
+	fprintf(fpasm, "pop ebp\n");
+	fprintf(fpasm, "ret\n");
+} 
+
+void asignar_local(FILE * fpasm, int n_local, int es_inmediato)
+{
+	fprintf(fpasm, "pop dword eax\n");
+	fprintf(fpasm, "mov dword [ebp+%d], %s\n", n_local*4, es_inmediato? "eax" : "[eax]");
+
 }

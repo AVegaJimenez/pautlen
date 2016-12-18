@@ -78,7 +78,7 @@ void escribir_operando_array(FILE* fpasm, char* operando, int es_inmediato, int 
 
 void declarar_funcion(FILE* fpasm, char* nombre, int n_locales);
 
-void final_funcion(FILE* fpasm);
+void retorno_funcion(FILE* fpasm, int es_inmediato);
 
 void llamar_funcion(FILE* fpasm, char* nombre, int n_param);
 #endif

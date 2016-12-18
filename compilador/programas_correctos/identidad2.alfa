@@ -1,0 +1,11 @@
+main { 
+	int z;
+ 	function int id(int arg)
+ 		{
+ 		 int a;
+ 		 printf arg;
+		 return 2; 
+		}
+	z = 2;
+ 	printf id(3);
+}

@@ -1,0 +1,9 @@
+main { 
+	int z;
+ 	function int id()
+ 		{
+		 return z; 
+		}
+	z = 2;
+ 	printf id();
+}
