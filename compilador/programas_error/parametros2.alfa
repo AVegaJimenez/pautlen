@@ -1,0 +1,8 @@
+main {
+	int a;
+	function int f(int b){
+		printf b;
+		return b;
+	}
+	printf f();
+}

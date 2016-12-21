@@ -1,0 +1,9 @@
+main {
+	int a;
+	function int f(int b){
+		array int[2] a;
+		return b;
+	}
+	printf f(f(a));
+
+}

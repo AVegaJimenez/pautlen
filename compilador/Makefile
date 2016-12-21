@@ -26,12 +26,20 @@ NASM_BIN=$(patsubst %.asm, %, $(NASM_SRC))
 NASM_OBJ=$(patsubst %, %.o, $(NASM_BIN))
 NASM_LIB=alfalib.o
 
+ALFA2_SRC=$(wildcard programas_error/*.alfa)
+NASM2_SRC=$(patsubst %.alfa, %.asm, $(ALFA2_SRC))
+
 all: ${BIN} clean_asm
 	make asm
 
 alfa: ${BIN}
 
 asm: $(NASM_BIN)
+
+errores: clean_error $(NASM2_SRC) clean_error
+
+clean_error:
+	@rm -rf $(NASM2_SRC)
 
 ${BIN}:%: y.tab.o lex.yy.o %.o $(OBJ)
 	$(CC) -o $@ $^
@@ -58,6 +66,9 @@ lex.yy.c: alfa.l y.tab.h
 $(NASM_SRC):%.asm: %.alfa
 	$(ALFA) $< $@
 
+$(NASM2_SRC):%.asm: %.alfa
+	$(ALFA) $< $@
+
 $(NASM_OBJ):%.o: %.asm
 	$(ASM) $(ASMFLAGS) -o $@ $<
 
@@ -67,7 +78,7 @@ $(NASM_BIN):%: %.o $(NASM_LIB)
 clean: clean_asm
 	rm -rvf $(ZIPNAME) $(BIN) $(OBJ) lex.yy.c lex.yy.o y.tab.h y.tab.c y.tab.o y.output alfa
 
-clean_asm:
+clean_asm: clean_error
 	rm -rvf $(NASM_BIN) $(NASM_OBJ) $(NASM_SRC)
 
 zip: clean

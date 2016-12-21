@@ -44,6 +44,14 @@ INFO_SIMBOLO *UsoLocal(const char *id) {
     return dato == NULL? UsoGlobal(id) : dato;
 }
 
+int EsLocal(const char *id) {
+    if(TablaSimbolosLocal == NULL) {
+        return 0;
+    }
+    return buscar_simbolo(TablaSimbolosLocal, id)!=NULL;
+
+}
+
 STATUS DeclararFuncion(const char *id, INFO_SIMBOLO *desc_id) {
     if(buscar_simbolo(TablaSimbolosGlobal, id) == NULL) {
         if(insertar_simbolo(TablaSimbolosGlobal, id, desc_id->categoria, desc_id->tipo, desc_id->clase, desc_id->adicional1, desc_id->adicional2) == ERR) {

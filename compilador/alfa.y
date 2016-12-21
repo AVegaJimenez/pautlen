@@ -28,6 +28,8 @@ int num_parametros_actual = 0;
 int pos_parametro_actual = 0;
 int es_funcion=0;
 int es_llamada=0;
+int params = 0;
+int hay_return = 0;
 %}
 
 /* Palabras reservadas */
@@ -129,7 +131,7 @@ tipo: TOK_INT {tipo_actual=ENTERO; fprintf(out, ";R10:\t<tipo> ::= int\n");}
 clase_vector: TOK_ARRAY tipo TOK_CORCHETEIZQUIERDO TOK_CONSTANTE_ENTERA TOK_CORCHETEDERECHO {
   tamano_vector_actual = $4.valor_numerico; 
   if(tamano_vector_actual<1 || tamano_vector_actual > MAX_TAMANIO_VECTOR) {
-    fprintf(ERR_OUT, "****Error semantico en lin %ld: El tamanyo del vector <nombre_vector> excede los limites permitidos (1,64).\n", yylin);
+    fprintf(ERR_OUT, "****Error semantico en lin %ld: El tamanyo del vector excede los limites permitidos (1,64).\n", yylin);
     return -1;
   }
   fprintf(out, ";R15:\t<clase_vector> ::= array <tipo> [ <constante_entera> ]\n");
@@ -145,10 +147,12 @@ funciones: funcion funciones {fprintf(out, ";R20:\t<funciones> ::= <funcion> <fu
          ;
 
 fn_name : TOK_FUNCTION tipo TOK_IDENTIFICADOR {
+    hay_return = 0;
     es_funcion=1;
     read = BuscarSimbolo($3.nombre);
     if(read != NULL) {
       fprintf(ERR_OUT, "****Error semantico en lin %ld: Declaracion duplicada.\n", yylin);
+      return -1;
     }
 
     inserta.lexema = $3.nombre;
@@ -179,12 +183,18 @@ fn_declaration : fn_name TOK_PARENTESISIZQUIERDO parametros_funcion TOK_PARENTES
     declarar_funcion(out, $1.nombre, num_variables_locales_actual);
 } 
 
-funcion : fn_declaration sentencias TOK_LLAVEDERECHA {
+funcion: fn_declaration sentencias TOK_LLAVEDERECHA {
+  if(!hay_return) {
+    fprintf(ERR_OUT, "****Error semantico en lin %ld: Funcion %s sin sentencia de retorno.\n", yylin, $1.nombre);
+    return -1;
+  }
   CerrarFuncion();
+  fin_funcion(out);
   read = BuscarSimbolo($1.nombre);
   if(read == NULL) {
       /* TODO */
       fprintf(ERR_OUT, "****Error semantico en lin %ld: Declaracion duplicada.\n", yylin);
+      return -1;
   }
   read->adicional1 = num_parametros_actual;
   es_funcion = 0;
@@ -370,6 +380,12 @@ escritura: TOK_PRINTF exp {
          ;
 
 retorno_funcion: TOK_RETURN exp {
+  if(!es_funcion) {
+    fprintf(ERR_OUT, "****Error semantico en lin %ld: Sentencia de retorno fuera del cuerpo de una funcion.\n", yylin);
+    return -1;
+  }
+
+  hay_return = 1;
   retorno_funcion(out, $2.es_direccion?0:1);
   fprintf(out, ";R61:\t<retorno_funcion> ::= return <exp>\n");}
                ;
@@ -472,7 +488,6 @@ exp: exp TOK_MAS exp {
       /* Estamos en una funcion y la variable es local */
       if(read->categoria == PARAMETRO) {
         // REVISAR
-        printf("%d %d\n", num_parametros_actual, read->adicional1);
         escribir_operando_funcion(out, (num_parametros_actual-read->adicional1)+1);
       } else {
         escribir_operando_funcion(out, -(read->adicional1+1));
@@ -514,15 +529,17 @@ exp: exp TOK_MAS exp {
 
   }
    |  call_func lista_expresiones TOK_PARENTESISDERECHO {
-    if(es_llamada) {
-      // ERROR
-      fprintf(ERR_OUT, "Error doble llamada");
-      return -1;
-    }
-    // Comprobar funcion declarada
     read = BuscarSimbolo($1.nombre);
     if(read == NULL) {
-      fprintf(ERR_OUT, "****Error semantico en lin %ld: Acceso a variable no declarada (%s).\n", yylin, $1.nombre);
+      fprintf(ERR_OUT, "****Error semantico en lin %ld: Funcion no declarada (%s).\n", yylin, $1.nombre);
+      return -1;
+    }
+    if(read->categoria != FUNCION){
+      fprintf(ERR_OUT, "****Error semantico en lin %ld: El identificador no es una funcion (%s).\n", yylin, $1.nombre);
+      return -1;
+    }
+    if(read->adicional1 != params) {
+      fprintf(ERR_OUT, "****Error semantico en lin %ld: Numero incorrecto de parametros en llamada a funcion.\n", yylin);
       return -1;
     }
     es_llamada = 0;
@@ -532,20 +549,28 @@ exp: exp TOK_MAS exp {
    ;
 
 call_func: TOK_IDENTIFICADOR TOK_PARENTESISIZQUIERDO {
+  if(es_llamada) {
+    fprintf(ERR_OUT, "****Error semantico en lin %ld: No esta permitido el uso de llamadas a funciones como parametros de otras funciones.\n", yylin);
+    return -1;
+  }
   es_llamada = 1;
-
+  params = 0;
   strcpy($$.nombre, $1.nombre);
 }
 lista_expresiones: exp resto_lista_expresiones {
   es_llamada = 0;
+  params++;
   if($1.es_direccion) {
     cambiar_a_valor(out);
   }
   fprintf(out, ";R89:\t<lista_expresiones> ::= <exp> <resto_lista_expresiones>\n");}
-                 |   {fprintf(out, ";R90:\t<lista_expresiones> ::=\n");}
+                 |   {
+                  es_llamada = 0;
+                  fprintf(out, ";R90:\t<lista_expresiones> ::=\n");}
                  ;
 
 resto_lista_expresiones: TOK_COMA exp resto_lista_expresiones {
+  params++;
   if($2.es_direccion) {
     cambiar_a_valor(out);
   }
@@ -614,8 +639,9 @@ constante_entera: TOK_CONSTANTE_ENTERA { $$.tipo = ENTERO; $$.es_direccion = 0; 
 
 identificador: TOK_IDENTIFICADOR {
     read = BuscarSimbolo($1.nombre);
-    if(read != NULL) {
+    if((read != NULL && !es_funcion) || (read != NULL && EsLocal($1.nombre)) ) {
       fprintf(ERR_OUT, "****Error semantico en lin %ld: Declaracion duplicada.\n", yylin);
+      return -1;
     }
 
     inserta.lexema = $1.nombre;
@@ -629,6 +655,10 @@ identificador: TOK_IDENTIFICADOR {
       inserta.adicional1 = 1;
     }
     if(es_funcion) {
+      if(clase_actual == VECTOR) {
+        fprintf(ERR_OUT, "****Error semantico en lin %ld: Variable local de tipo no escalar.\n", yylin);
+        return -1;
+      }
       inserta.adicional1 = num_variables_locales_actual;
       num_variables_locales_actual++;
       pos_variable_local_actual++;

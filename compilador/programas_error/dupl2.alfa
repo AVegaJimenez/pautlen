@@ -1,0 +1,7 @@
+main { 
+	int z;
+ 	function int z(int a) {
+ 		return a;
+ 	}
+ 	printf z;
+}

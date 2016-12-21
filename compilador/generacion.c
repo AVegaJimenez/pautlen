@@ -486,3 +486,10 @@ void cambiar_a_valor(FILE* fpasm) {
 	fprintf(fpasm, "pop dword eax\n");
 	fprintf(fpasm, "push dword [eax]\n");
 }
+
+void fin_funcion(FILE* fpasm) {
+	fprintf(fpasm, "mov eax, 0\n");
+	fprintf(fpasm, "mov esp, ebp\n");
+	fprintf(fpasm, "pop ebp\n");
+	fprintf(fpasm, "ret\n");
+}

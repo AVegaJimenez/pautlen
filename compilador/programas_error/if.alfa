@@ -1,0 +1,8 @@
+main {
+	int a;
+	if(a){
+		printf 2;
+	} else {
+		printf true;
+	}
+}

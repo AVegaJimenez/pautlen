@@ -81,6 +81,16 @@ void declarar_funcion(FILE* fpasm, char* nombre, int n_locales);
 void retorno_funcion(FILE* fpasm, int es_inmediato);
 
 void llamar_funcion(FILE* fpasm, char* nombre, int n_param);
+
+void escribir_operando_funcion(FILE* fpasm, int n_parametro);
+
+void retorno_funcion(FILE* fpasm, int es_inmediato);
+
+void fin_funcion(FILE* fpasm);
+
+void asignar_local(FILE * fpasm, int n_local, int es_inmediato);
+
+void cambiar_a_valor(FILE* fpasm);
 #endif
 
 

@@ -1,0 +1,4 @@
+main {
+	boolean a;
+	return a;
+}

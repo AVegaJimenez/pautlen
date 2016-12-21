@@ -1,0 +1,9 @@
+main { 
+	int a;
+ 	function int f(int b) {
+ 		int a;
+ 		boolean a;
+ 		return a;
+ 	}
+ 	printf a;
+}

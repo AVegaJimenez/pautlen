@@ -1,0 +1,12 @@
+main { 
+	int z;
+ 	function int factorial(int k)
+ 		{
+ 		 if ((k < 1)) {
+ 		 	return 1;
+ 		 }
+ 		 return k * factorial(k-1);
+		}
+	scanf z;
+ 	printf factorial(z);
+}

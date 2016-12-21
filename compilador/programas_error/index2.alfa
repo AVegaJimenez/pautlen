@@ -1,0 +1,4 @@
+main {
+	array boolean[2] a;
+	printf a[false];
+}

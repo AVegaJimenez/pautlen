@@ -14,6 +14,8 @@ INFO_SIMBOLO *UsoGlobal(const char *id);
 INFO_SIMBOLO *UsoLocal(const char *id);
 STATUS DeclararFuncion(const char *id, INFO_SIMBOLO *desc_id);
 STATUS CerrarFuncion();
+int EsLocal(const char *id);
+
 void Terminar();
 
 #endif /* TABLASIMBOLOS_H */
