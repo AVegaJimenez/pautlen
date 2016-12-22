@@ -16,7 +16,7 @@ ASMFLAGS=-g -f elf32
 NASM_LDFLAGS=-m32 -g
 
 ZIPNAME = Fuentes_Perdices_5_compilador.zip
-ZIPFILES = *.l *.y *.c *.h Makefile programas_correctos/* alfalib.o
+ZIPFILES = *.l *.y *.c *.h Makefile programas_correctos/* programas_error/* alfalib.o
 
 OBJ = tablaSimbolos.o tablaHash.o generacion.o
 

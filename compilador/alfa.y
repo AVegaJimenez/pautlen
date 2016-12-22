@@ -174,8 +174,8 @@ fn_declaration : fn_name TOK_PARENTESISIZQUIERDO parametros_funcion TOK_PARENTES
   /* Actualizar atributo num_parametros */
     read = BuscarSimbolo($1.nombre);
     if(read == NULL) {
-      /* TODO */
       fprintf(ERR_OUT, "****Error semantico en lin %ld: Declaracion duplicada.\n", yylin);
+      return -1;
     }
     read->adicional1 = num_parametros_actual;
     strcpy($$.nombre, $1.nombre);
@@ -218,6 +218,7 @@ idpf : TOK_IDENTIFICADOR {
     read = BuscarSimbolo($1.nombre);
     if(read != NULL) {
       fprintf(ERR_OUT, "****Error semantico en lin %ld: Declaracion duplicada.\n", yylin);
+      return -1;
     }
     inserta.lexema = $1.nombre;
     inserta.categoria = PARAMETRO;
