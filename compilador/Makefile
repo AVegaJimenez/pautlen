@@ -21,12 +21,16 @@ ZIPFILES = *.l *.y *.c *.h Makefile programas_correctos/* programas_error/* alfa
 OBJ = tablaSimbolos.o tablaHash.o generacion.o
 
 ALFA_SRC=$(wildcard programas_correctos/*.alfa)
+ALFA_SRC+=$(wildcard ficheros_correccion/*.alfa)
 NASM_SRC=$(patsubst %.alfa, %.asm, $(ALFA_SRC))
 NASM_BIN=$(patsubst %.asm, %, $(NASM_SRC))
 NASM_OBJ=$(patsubst %, %.o, $(NASM_BIN))
 NASM_LIB=alfalib.o
 
+TEST_INPUT=$(wildcard ficheros_correccion/*.input)
+TESTS=$(patsubst %_*, %, $(TEST_INPUT))
 ALFA2_SRC=$(wildcard programas_error/*.alfa)
+ALFA2_SRC+=$(wildcard ficheros_correccion_errores/*.alfa)
 NASM2_SRC=$(patsubst %.alfa, %.asm, $(ALFA2_SRC))
 
 all: ${BIN} clean_asm
@@ -80,6 +84,9 @@ clean: clean_asm
 
 clean_asm: clean_error
 	rm -rvf $(NASM_BIN) $(NASM_OBJ) $(NASM_SRC)
+
+test:
+	@awk '{system("python pytest.py " ((NF==3)? ("--input "$$3) :("") ) " --output "$$2" "$$1)}' correccion
 
 zip: clean
 	zip $(ZIPNAME) $(ZIPFILES)

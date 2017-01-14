@@ -544,6 +544,7 @@ exp: exp TOK_MAS exp {
       return -1;
     }
     es_llamada = 0;
+    $$.tipo = read->tipo;
     llamar_funcion(out, $1.nombre, read->adicional1);
 
     fprintf(out, ";R88:\t<exp> ::= <identificador> ( <lista_expresiones> )\n");}
@@ -558,26 +559,27 @@ call_func: TOK_IDENTIFICADOR TOK_PARENTESISIZQUIERDO {
   params = 0;
   strcpy($$.nombre, $1.nombre);
 }
-lista_expresiones: exp resto_lista_expresiones {
+lista_expresiones: expf resto_lista_expresiones {
   es_llamada = 0;
   params++;
-  if($1.es_direccion) {
-    cambiar_a_valor(out);
-  }
+  
   fprintf(out, ";R89:\t<lista_expresiones> ::= <exp> <resto_lista_expresiones>\n");}
                  |   {
                   es_llamada = 0;
                   fprintf(out, ";R90:\t<lista_expresiones> ::=\n");}
                  ;
 
-resto_lista_expresiones: TOK_COMA exp resto_lista_expresiones {
+resto_lista_expresiones: TOK_COMA expf resto_lista_expresiones {
   params++;
-  if($2.es_direccion) {
-    cambiar_a_valor(out);
-  }
+
   fprintf(out, ";R91:\t<resto_lista_expresiones> ::= , <exp> <resto_lista_expresiones>\n");}
                        |   {fprintf(out, ";R92:\t<resto_lista_expresiones> ::=\n");}
                        ;
+expf: exp {
+  if($1.es_direccion) {
+    cambiar_a_valor(out);
+  }
+}
 
 comparacion: exp TOK_IGUAL exp {
   if($1.tipo != ENTERO || $3.tipo != ENTERO) {
