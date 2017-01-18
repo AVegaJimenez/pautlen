@@ -29,6 +29,7 @@ while               	"while"
 scanf               	"scanf"
 printf              	"printf"
 return              	"return"
+init					"init"
 puntoycoma          	";"
 coma                	","
 parentesisizquierdo 	"("
@@ -57,6 +58,7 @@ false               	"false"
 identificador       	[a-zA-Z][a-zA-Z0-9]{0,99}
 erroridentificador      [a-zA-Z][a-zA-Z0-9]*
 error               	.
+
 %%
 {comentario}          	{/* COMENTARIO */}
 {whitespace}            {yycol += yyleng;}
@@ -72,6 +74,7 @@ error               	.
 {scanf}               	{yycol += yyleng; _print_token(out); return  TOK_SCANF;}
 {printf}              	{yycol += yyleng; _print_token(out); return  TOK_PRINTF;}
 {return}              	{yycol += yyleng; _print_token(out); return  TOK_RETURN;}
+{init}              	{yycol += yyleng; _print_token(out); return  TOK_INIT;}
 {puntoycoma}          	{yycol += yyleng; _print_token(out); return  TOK_PUNTOYCOMA;}
 {coma}                	{yycol += yyleng; _print_token(out); return  TOK_COMA;}
 {parentesisizquierdo} 	{yycol += yyleng; _print_token(out); return  TOK_PARENTESISIZQUIERDO;}

@@ -30,6 +30,11 @@ int es_funcion=0;
 int es_llamada=0;
 int params = 0;
 int hay_return = 0;
+
+int num_init=0;
+int init_max=0;
+TIPO init_tipo;
+char init_id[101]={0};
 %}
 
 /* Palabras reservadas */
@@ -44,6 +49,7 @@ int hay_return = 0;
 %token TOK_SCANF
 %token TOK_PRINTF
 %token TOK_RETURN
+%token TOK_INIT
 
 /* Símbolos */
 %token TOK_PUNTOYCOMA
@@ -244,8 +250,67 @@ sentencia: sentencia_simple TOK_PUNTOYCOMA {fprintf(out, ";R32:\t<sentencia> ::=
 sentencia_simple: asignacion {fprintf(out, ";R34:\t<sentencia_simple> ::= <asignacion>\n");}
                 | lectura {fprintf(out, ";R35:\t<sentencia_simple> ::= <lectura>\n");}
                 | escritura {fprintf(out, ";R36:\t<sentencia_simple> ::= <escritura>\n");}
+                | inicializacion {fprintf(out, ";RXX:\t<sentencia_simple> ::= <inicializacion>\n");}
                 | retorno_funcion {fprintf(out, ";R38:\t<sentencia_simple> ::= <retorno_funcion>\n");}
                 ;
+/***************************************/
+/** Solucion al examen **/
+
+
+inicializacion: init_id lista_exp TOK_LLAVEDERECHA 
+{
+  for(;num_init<init_max;num_init++) {
+      fprintf(out, "mov dword [_%s+%d], 0\n", init_id, 4*(num_init));
+  }
+  num_init=0;
+}
+init_id: TOK_INIT TOK_IDENTIFICADOR TOK_LLAVEIZQUIERDA {
+  read = BuscarSimbolo($2.nombre);
+  if (read == NULL) {
+    fprintf(ERR_OUT, "****Error semantico en lin %ld: Acceso a variable no declarada (%s).\n", yylin, $2.nombre);
+    return -1;
+  }
+
+  if(read->clase != VECTOR) {
+    fprintf(ERR_OUT, "****Error semantico en lin %ld: Intento de inicializacion de una variable que no es de tipo vector.\n", yylin);
+    return -1;
+  }
+  init_tipo =read->tipo;
+  init_max = read->adicional1; /* Tamaño del vector */
+  strcpy(init_id, $2.nombre);
+
+}
+
+lista_exp: exp_i resto_lista_exp
+
+
+resto_lista_exp: TOK_PUNTOYCOMA exp_i resto_lista_exp 
+  |
+
+exp_i: exp {
+  if(num_init >= init_max) {
+    fprintf(ERR_OUT, "****Error semantico en lin %ld: Lista de inicialización de longitud incorrecta.\n", yylin);
+    return -1;
+  }
+
+  if($1.tipo != init_tipo) {
+    fprintf(ERR_OUT, "****Error semantico en lin %ld: Lista de inicialización con expresión de tipo incorrecto.\n", yylin);
+    return -1;
+  }
+
+  if($1.es_direccion) {
+    cambiar_a_valor(out);
+  }
+
+  fprintf(out, "pop dword eax\n");
+  fprintf(out, "mov dword [_%s+%d], eax\n", init_id, 4*(num_init));
+  num_init++;
+}
+
+
+/***************************************/
+
+
 
 bloque: condicional {fprintf(out, ";R40:\t<bloque> ::= <condicional>\n");}
       | bucle {fprintf(out, ";R41:\t<bloque> ::= <bucle>\n");}
