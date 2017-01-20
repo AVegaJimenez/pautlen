@@ -30,6 +30,8 @@ int es_funcion=0;
 int es_llamada=0;
 int params = 0;
 int hay_return = 0;
+
+int num_cmp=0;
 %}
 
 /* Palabras reservadas */
@@ -69,6 +71,12 @@ int hay_return = 0;
 %token TOK_MENOR
 %token TOK_MAYOR
 
+%token TOK_COMPARE
+%token TOK_WITH
+%token TOK_LESS
+%token TOK_EQUAL
+%token TOK_GREATER
+
 /* Identificadores  */
 %token <atributos> TOK_IDENTIFICADOR
 
@@ -97,6 +105,13 @@ int hay_return = 0;
 %type <atributos> fn_declaration
 
 %type <atributos> call_func
+
+
+%type <atributos> compare_exp_w_exp
+%type <atributos> compare_exp_w_exp_l
+%type <atributos> compare_exp_w_exp_l_e
+%type <atributos> compare_exp_w_exp_l_e_g
+
 
 %left TOK_MAS TOK_MENOS TOK_OR
 %left TOK_ASTERISCO TOK_DIVISION TOK_AND
@@ -675,6 +690,68 @@ identificador: TOK_IDENTIFICADOR {
     fprintf(out, ";R108:\t<identificador> ::= TOK_IDENTIFICADOR\n");}
              ;
 
+/*************************************************************************/
+/* Solucion al examen */
+condicional: compare_exp_w_exp_l_e_g sentencias TOK_LLAVEDERECHA
+{
+  /* Poner tag fin del condicional*/
+  fprintf(out, "__compare_end_%d:\n", $1.etiqueta);
+}
+
+compare_exp_w_exp_l_e_g: compare_exp_w_exp_l_e sentencias TOK_GREATER
+{
+  $$.etiqueta = $1.etiqueta;
+  fprintf(out, "jmp __compare_end_%d\n", $1.etiqueta);
+  fprintf(out, "__compare_g_%d:\n", $1.etiqueta);
+
+}
+
+compare_exp_w_exp_l_e: compare_exp_w_exp_l sentencias TOK_EQUAL
+{
+  $$.etiqueta = $1.etiqueta;
+  fprintf(out, "jmp __compare_end_%d\n", $1.etiqueta);  
+  fprintf(out, "__compare_e_%d:\n", $1.etiqueta);
+}
+
+compare_exp_w_exp_l: compare_exp_w_exp TOK_LESS 
+{
+  $$.etiqueta = $1.etiqueta;
+  fprintf(out, "__compare_l_%d:\n", $1.etiqueta);
+}
+
+compare_exp_w_exp: TOK_COMPARE exp TOK_WITH exp TOK_LLAVEIZQUIERDA 
+{
+  /* Sacar ambos de la pila y hacer comparaciones */
+  if($2.tipo != ENTERO || $4.tipo != ENTERO) {
+    return -1;
+  }
+
+  $$.etiqueta = num_cmp;
+  num_cmp++;
+  fprintf(out, "pop dword eax\n");
+  if($4.es_direccion) {
+    fprintf(out, "mov eax, [eax]\n");
+  }
+
+
+  fprintf(out, "pop dword ebx\n");
+  if($2.es_direccion) {
+    fprintf(out, "mov ebx, [ebx]\n");
+  }
+
+  fprintf(out, "cmp ebx, eax\n");
+
+  fprintf(out, "jl __compare_l_%d\n", $$.etiqueta);
+  fprintf(out, "je __compare_e_%d\n", $$.etiqueta);
+  fprintf(out, "jg __compare_g_%d\n", $$.etiqueta);
+
+
+
+}
+
+
+
+/*************************************************************************/
  
 escribirTabla: { /* Escribir tabla de simbolos a nasm */ escribir_segmento_codigo(out); }
 

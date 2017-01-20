@@ -34,7 +34,7 @@ ALFA2_SRC+=$(wildcard ficheros_correccion_errores/*.alfa)
 NASM2_SRC=$(patsubst %.alfa, %.asm, $(ALFA2_SRC))
 
 all: ${BIN} clean_asm
-	make asm
+	#make asm
 
 alfa: ${BIN}
 

@@ -54,6 +54,13 @@ mayor               	">"
 constante_entera    	[0-9]+
 true                	"true"
 false               	"false"
+
+compare					"compare"
+with					"with"
+less					"less"
+equal					"equal"
+greater					"greater"
+
 identificador       	[a-zA-Z][a-zA-Z0-9]{0,99}
 erroridentificador      [a-zA-Z][a-zA-Z0-9]*
 error               	.
@@ -97,6 +104,13 @@ error               	.
 {constante_entera}    	{yylval.atributos.valor_numerico = atoi(yytext); strcpy(yylval.atributos.nombre, yytext); yycol += yyleng; _print_token(out); return  TOK_CONSTANTE_ENTERA;}
 {true}                	{yycol += yyleng; _print_token(out); return  TOK_TRUE;}
 {false}               	{yycol += yyleng; _print_token(out); return  TOK_FALSE;}
+
+{compare}				{yycol += yyleng; _print_token(out); return  TOK_COMPARE;}
+{with}					{yycol += yyleng; _print_token(out); return  TOK_WITH;}
+{less}					{yycol += yyleng; _print_token(out); return  TOK_LESS;}
+{equal}					{yycol += yyleng; _print_token(out); return  TOK_EQUAL;}
+{greater}				{yycol += yyleng; _print_token(out); return  TOK_GREATER;}
+
 {identificador}       	{strcpy(yylval.atributos.nombre, yytext); yycol += yyleng; _print_token(out); return  TOK_IDENTIFICADOR;}
 {erroridentificador}    {fprintf(stderr, "****Error en [lin %ld, col %ld]: simbolo no permitido (%s)\n", yylin, yycol+1, yytext); yycol += yyleng; yymorph = 1; return  TOK_ERROR;}
 {error}               	{fprintf(stderr, "****Error en [lin %ld, col %ld]: identificador demasiado largo (%s)\n", yylin, yycol+1, yytext); yycol += yyleng; yymorph = 2; return  TOK_ERROR;}
