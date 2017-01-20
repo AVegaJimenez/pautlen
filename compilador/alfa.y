@@ -77,6 +77,8 @@ int hay_return = 0;
 %token TOK_TRUE
 %token TOK_FALSE
 
+%token TOK_INCREMENTO
+
 /* Errores */
 %token TOK_ERROR
 
@@ -245,6 +247,7 @@ sentencia_simple: asignacion {fprintf(out, ";R34:\t<sentencia_simple> ::= <asign
                 | lectura {fprintf(out, ";R35:\t<sentencia_simple> ::= <lectura>\n");}
                 | escritura {fprintf(out, ";R36:\t<sentencia_simple> ::= <escritura>\n");}
                 | retorno_funcion {fprintf(out, ";R38:\t<sentencia_simple> ::= <retorno_funcion>\n");}
+                | incremento {fprintf(out, ";RXX:\t<sentencia_simple> ::= <incremento>\n");}
                 ;
 
 bloque: condicional {fprintf(out, ";R40:\t<bloque> ::= <condicional>\n");}
@@ -680,6 +683,58 @@ escribirTabla: { /* Escribir tabla de simbolos a nasm */ escribir_segmento_codig
 
 escribirMain: { escribir_inicio_main(out);}
 
+/***********************************************************************/
+/* Solucion al examen */
+
+incremento: TOK_IDENTIFICADOR TOK_INCREMENTO exp
+{
+  if($3.tipo != ENTERO) {
+    /* ERR */
+    return -1;
+  }
+  read = BuscarSimbolo($1.nombre);
+  if(read == NULL) {
+    /* ERR */
+    return -1;
+  }
+
+  if(read->tipo == BOOLEANO || read->categoria == FUNCION) {
+    /* ERR */
+    return -1;
+  }
+
+  if (UsoGlobal($1.nombre) == NULL) {
+      /* Estamos en una funcion y la variable es local */
+      if(read->categoria == PARAMETRO) {
+        fprintf(out, "pop dword eax\n");
+        fprintf(out, "add [ebp + %d], eax\n", 4*(num_parametros_actual-read->adicional1+1));
+      } else {        
+        fprintf(out, "pop dword eax\n");
+        fprintf(out, "add [ebp + %d], eax\n", -4*(read->adicional1+1));
+      }
+  } else {
+    if(read->clase == ESCALAR) {
+      fprintf(out, "pop dword eax\n");
+      if($3.es_direccion) {
+        fprintf(out, "mov eax, [eax]\n");
+      }
+      fprintf(out, "add [_%s], eax\n", $1.nombre);
+    } else {
+      fprintf(out, "pop dword eax\n");
+      if($3.es_direccion) {
+        fprintf(out, "mov eax, [eax]\n");
+      }
+      int i;
+      for(i=0; i<read->adicional1; i++) {
+        fprintf(out, "add [_%s+%d], eax\n", $1.nombre, 4*i);
+      }
+    }
+  }
+}
+
+/***********************************************************************/
+
+
 %%
 
 void yyerror(const char * s) {
@@ -687,3 +742,4 @@ void yyerror(const char * s) {
         printf("****Error sintactico en [lin %ld, col %ld]\n", yylin, yycol);
     }
 }
+
