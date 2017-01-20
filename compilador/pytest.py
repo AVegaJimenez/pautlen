@@ -27,30 +27,28 @@ def main(args):
 		stdin = None
 
 	if args.output:
-		stdout = open(args.output, 'br')
+		stdout = open(args.output, 'rb')
 	else:
 		stdout = None
 
-	with subprocess.Popen([args.action], stdin=stdin, stdout=subprocess.PIPE) as proc:
-		exp_output_b = stdout.read()
-		exp_output_b = exp_output_b.replace(b'\n\n', b'\n')
-		exp_output_b = exp_output_b.replace(b'\r\n', b'\n')
-		exp_output = str(exp_output_b)
-
-		output_b = proc.stdout.read()
-		output = str(output_b)
-
-		res = output == exp_output
-		if res == True:
-			print(bcolors.GREEN + "Test " + bcolors.CYAN + args.action + bcolors.GREEN + " successfully passed." + bcolors.RESET)
-		else:
-			print(bcolors.RED + "Expected output")
-			print(exp_output_b.decode())
-			print(exp_output)
-			print(bcolors.YELLOW + "Program output")
-			print(output_b.decode())
-			print(output)
-			print(bcolors.RED + "Test " + bcolors.CYAN + args.action + bcolors.RED + " failed." + bcolors.RESET)
+	proc = subprocess.Popen([args.action], stdin=stdin, stdout=subprocess.PIPE)
+	exp_output_b = stdout.read()
+	exp_output_b = exp_output_b.replace(b'\n\n', b'\n')
+	exp_output_b = exp_output_b.replace(b'\r\n', b'\n')
+	exp_output = str(exp_output_b)
+	output_b = proc.stdout.read()
+	output = str(output_b)
+	res = output == exp_output
+	if res == True:
+		print(bcolors.GREEN + "Test " + bcolors.CYAN + args.action + bcolors.GREEN + " successfully passed." + bcolors.RESET)
+	else:
+		print(bcolors.RED + "Expected output")
+		print(exp_output_b.decode())
+		print(exp_output)
+		print(bcolors.YELLOW + "Program output")
+		print(output_b.decode())
+		print(output)
+		print(bcolors.RED + "Test " + bcolors.CYAN + args.action + bcolors.RED + " failed." + bcolors.RESET)
 
 
 if __name__ == '__main__':
