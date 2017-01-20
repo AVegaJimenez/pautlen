@@ -302,7 +302,8 @@ elemento_vector: TOK_IDENTIFICADOR TOK_CORCHETEIZQUIERDO exp TOK_CORCHETEDERECHO
     return -1;
   }  
   if(read->categoria == FUNCION) { /***REVISAR*/
-    fprintf(stderr,"Identificador no valido\n");  
+    fprintf(ERR_OUT,"****Error semantico en lin %ld: Identificador no valido\n", yylin);
+    return -1;  
   }  
   if(read->clase == ESCALAR) {
     fprintf(ERR_OUT, "****Error semantico en lin %ld: Intento de indexacion de una variable que no es de tipo vector.\n", yylin);
@@ -488,7 +489,6 @@ exp: exp TOK_MAS exp {
     if (UsoGlobal($1.nombre) == NULL) {
       /* Estamos en una funcion y la variable es local */
       if(read->categoria == PARAMETRO) {
-        // REVISAR
         escribir_operando_funcion(out, (num_parametros_actual-read->adicional1)+1);
       } else {
         escribir_operando_funcion(out, -(read->adicional1+1));
@@ -496,7 +496,9 @@ exp: exp TOK_MAS exp {
 
     } else {
       if(read->categoria==FUNCION) {
-        fprintf(stderr,"Identificador no valido\n");
+        /* NUNCA SUCEDE */
+        fprintf(ERR_OUT,"Identificador no valido\n");
+        return -1;
     }
     
     escribir_operando(out, $1.nombre, 1);
