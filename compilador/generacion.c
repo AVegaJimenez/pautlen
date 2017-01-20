@@ -19,6 +19,7 @@ void escribir_subseccion_data(FILE* fpasm)
 	fprintf(fpasm, "segment .data\n");
 	fprintf(fpasm, "__index_out_of_bounds db \"****Error de ejecucion: Indice fuera de rango.\", 10, 0\n");
 	fprintf(fpasm, "__division_by_zero db \"****Error de ejecucion: Division por cero.\", 10, 0\n");
+	fprintf(fpasm, "__neg_exp db \"****Error de ejecucion: Exponente negativo.\", 10, 0\n");
 
 }
 
@@ -83,15 +84,24 @@ void escribir_inicio_main(FILE* fpasm)
 void escribir_fin(FILE* fpasm)
 {
 	fprintf(fpasm, "jmp near _fin\n");
+
 	fprintf(fpasm, "_error_division_zero:\n");
 	fprintf(fpasm, "push dword __division_by_zero\n");
 	fprintf(fpasm, "call print_string\n");
 	fprintf(fpasm, "add esp, 4\n");
 	fprintf(fpasm, "jmp near _fin\n");
+
 	fprintf(fpasm, "_error_index_out_of_bounds:\n");
 	fprintf(fpasm, "push dword __index_out_of_bounds\n");
 	fprintf(fpasm, "call print_string\n");
 	fprintf(fpasm, "add esp, 4\n");
+	fprintf(fpasm, "jmp near _fin\n");
+
+	fprintf(fpasm, "_error_exp_neg:\n");
+	fprintf(fpasm, "push dword __neg_exp\n");
+	fprintf(fpasm, "call print_string\n");
+	fprintf(fpasm, "add esp, 4\n");
+
 	fprintf(fpasm, "_fin: mov dword esp, [__esp]\n");
 	fprintf(fpasm, "ret\n");
 }

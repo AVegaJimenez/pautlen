@@ -30,6 +30,7 @@ int es_funcion=0;
 int es_llamada=0;
 int params = 0;
 int hay_return = 0;
+int num_pot = 0;
 %}
 
 /* Palabras reservadas */
@@ -77,6 +78,7 @@ int hay_return = 0;
 %token TOK_TRUE
 %token TOK_FALSE
 
+%token TOK_POTENCIA
 /* Errores */
 %token TOK_ERROR
 
@@ -100,6 +102,7 @@ int hay_return = 0;
 
 %left TOK_MAS TOK_MENOS TOK_OR
 %left TOK_ASTERISCO TOK_DIVISION TOK_AND
+%right TOK_POTENCIA
 %right MENOSU TOK_NOT
 
 %union {
@@ -681,6 +684,51 @@ identificador: TOK_IDENTIFICADOR {
 escribirTabla: { /* Escribir tabla de simbolos a nasm */ escribir_segmento_codigo(out); }
 
 escribirMain: { escribir_inicio_main(out);}
+
+/************************************************************************/
+/* Solucion al examen */
+
+exp: exp TOK_POTENCIA exp 
+{
+  $$.tipo = ENTERO;
+  $$.es_direccion = 0;
+
+  if($1.tipo != ENTERO || $3.tipo != ENTERO) {
+    /* ERR */
+    return -1;
+  }
+
+  fprintf(out,"pop dword ebx\n");
+  if($3.es_direccion) {
+    fprintf(out, "mov ebx, [ebx]\n");
+  }
+
+  //fprintf(out,"xor edx, edx\n");
+
+
+  fprintf(out, "mov eax, 1\n");
+
+  fprintf(out,"pop dword ecx\n");
+  if($1.es_direccion) {
+    fprintf(out, "mov ecx, [ecx]\n");
+  }
+
+  fprintf(out, "_power_loop_%d:\n", num_pot);  
+  fprintf(out, "cmp ebx, 0\n");
+  fprintf(out, "jl _error_exp_neg\n");
+  fprintf(out, "je _power_end_%d\n", num_pot);
+
+  fprintf(out, "imul ecx\n");
+  fprintf(out, "dec ebx\n");
+  fprintf(out, "jmp _power_loop_%d\n", num_pot);
+
+
+  fprintf(out, "_power_end_%d:\n", num_pot);
+  fprintf(out, "push dword eax\n");
+  num_pot++;
+
+}
+/************************************************************************/
 
 %%
 
