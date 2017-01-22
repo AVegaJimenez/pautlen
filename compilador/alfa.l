@@ -14,7 +14,9 @@ long yylin = 1;
 long yycol = 1;
 int yymorph = 0;
 %}
+
 %option noyywrap
+
 whitespace              [ \t]+
 newline                 \n|\n\r|\r
 comentario              "//".*
