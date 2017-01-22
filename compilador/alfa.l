@@ -18,7 +18,7 @@ int yymorph = 0;
 %option noyywrap
 
 whitespace              [ \t]+
-newline                 \n|\n\r|\r
+newline                 \n|\r\n|\r
 comentario              "//".*
 main                	"main"
 int                 	"int"
